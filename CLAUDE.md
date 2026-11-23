@@ -184,6 +184,10 @@ copy from it.
 
 - `main` is always deployable. Work on branches: `feat/...`, `fix/...`, `test/...`, `docs/...`, `gate/...`.
 - Commit messages: Conventional Commits in English (`feat(executor): add exit ladder`).
+- One commit per logical step (for example: dependencies, config, one contract, its tests, CI, docs). Do not bundle
+  unrelated changes into one commit.
+- No AI attribution anywhere in git or on GitHub: no `Co-Authored-By` lines for AI tools, and no "Generated with"
+  footers in commit messages, PR descriptions, or comments.
 - Every PR needs one review from another team member. PRs that touch fund-moving code need Razaqi's review.
 - Do not push, force-push, or merge for someone else without asking.
 
