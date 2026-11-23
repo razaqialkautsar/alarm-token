@@ -12,7 +12,9 @@ Read `PRD.md` and `CLAUDE.md` before this file.
 - **Design: final.** Research and brainstorming ran from 18 to 23 Nov. All design decisions are in `PRD.md`. The full
   reasoning (Indonesian) is in `D:\Project\HACKATHON LAGI\alarm-token-final.md`.
 - **Code: repo initialized** at `github.com/razaqialkautsar/alarm-token` with docs, license, and the folder layout
-  from `PRD.md` §12. The contracts scaffold (tasks 1 and 2) is in progress on branch `feat/scaffold-contracts`.
+  from `PRD.md` §12. The contracts scaffold (tasks 1 and 2) is on branch `feat/scaffold-contracts`, waiting for
+  review: Foundry project in `contracts/`, dependencies and compiler pinned, minimal CI, minimal `DemoOFT`, and smoke
+  tests. `forge build` and `forge test` pass locally (6 tests).
 - **Gates: not run.** G1, G2, G4 have not started. G3, G5, G6 are partly done from research only (see §2).
 - **Deadline:** submit on **4 Dec 2026** (event ends 5 Dec, time zone not published). About 11 days left.
 - **Track:** not chosen yet. Decided after G5 (`PRD.md` §4.4). Default is Set It and Forget It if chain X ends up
@@ -38,10 +40,12 @@ Addresses and full details: `PRD.md` §7.1, §7.4, §8.5, §20.
 
 ## 3. Not known yet (must be resolved by doing, not guessing)
 
-- How to install `reactive-lib-omni` and set up the `@reactive/` remapping. Not documented. Try the Reactive MCP
-  `get_rc_template`, or add the repo as a git submodule.
-- Exact LayerZero V2 OFT package and version.
-- One compiler version that works with both LayerZero (`^0.8.20`) and `reactive-lib-omni` (`^0.8.29`).
+- ~~How to install `reactive-lib-omni`~~ Resolved 23 Nov: git submodule at `3ade0dc`, remapping
+  `@reactive/=lib/reactive-lib-omni/`. A minimal `AbstractReactive` compiles and its `onlySystem` test passes.
+- ~~Exact LayerZero V2 OFT package and version~~ Resolved 23 Nov: npm, `@layerzerolabs/oft-evm` 4.0.1 and related
+  packages pinned in `contracts/package-lock.json`. See README "Dependencies".
+- ~~One compiler version~~ Resolved 23 Nov: solc 0.8.30, `evm_version = "prague"`. Lasna RPC probes show no blob
+  support (`BLOBBASEFEE` crashes the RPC) and no EIP-2935 contract. See README "Compiler and EVM target".
 - Whether OFT messages work both ways between Base Sepolia and Unichain Sepolia, or Ethereum Sepolia (G2).
 - Uniswap v3 or v4, and the `Swap` event format (G6).
 - Gas: callback batch size, proxy `_extraGas` / `_maxChargeGas`, ladder cost (G3, G4).

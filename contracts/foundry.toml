@@ -1,0 +1,21 @@
+[profile.default]
+src = "src"
+test = "test"
+script = "script"
+out = "out"
+libs = ["lib", "node_modules"]
+
+# One pinned compiler for every contract.
+# It must satisfy LayerZero V2 (`^0.8.20`) and reactive-lib-omni (`^0.8.29`).
+solc_version = "0.8.30"
+
+# Explicit EVM target for all three chains (Lasna, Base Sepolia, chain X).
+# Checked on 23 Nov 2026 with eth_call probes against each chain's RPC (see README "Compiler and EVM target"):
+# PUSH0, TSTORE/TLOAD and MCOPY run on Reactive Lasna, Base Sepolia and Ethereum Sepolia.
+# Base docs state Isthmus (Pectra) is active on Base Sepolia since 17 Apr 2025.
+# Lasna has no blob support: BLOBBASEFEE crashed the RPC. Never use `block.blobbasefee` or `blobhash`
+# in contracts deployed to Lasna. Solidity only emits those opcodes when the code uses them.
+evm_version = "prague"
+
+optimizer = true
+optimizer_runs = 200
