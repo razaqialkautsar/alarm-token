@@ -51,8 +51,16 @@ forge script script/DeployDemoOFT.s.sol --rpc-url $ETH_SEPOLIA_RPC_URL --private
 ```
 
 Optional environment variables: `DEMO_OFT_NAME`, `DEMO_OFT_SYMBOL`, `DEMO_OFT_INITIAL_SUPPLY` (whole tokens, default
-1,000,000). Record the printed address in `deployments/` and the tx hash in `docs/gates.md`. The script does not set
-peers; call `setPeer` on both tokens before sending (gate G2).
+1,000,000). Record the printed address in `deployments/` and the tx hash in `docs/gates.md`.
+
+Then wire the peers, once per chain, each time pointing at the token on the other chain
+(`contracts/script/WireDemoOFT.s.sol`). The signer must own the local token. It skips the call if the peer is already
+set, because `PeerSet` is emitted on every `setPeer`, even with an unchanged value.
+
+```sh
+# On Base Sepolia, pointing at the Ethereum Sepolia token (EID 40161). Swap the values for the other chain.
+LOCAL_OFT=0x... REMOTE_EID=40161 REMOTE_OFT=0x...   forge script script/WireDemoOFT.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
+```
 
 ## Dependencies
 
