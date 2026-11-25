@@ -31,13 +31,13 @@ contract DeployDemoOFT is Script, TestnetGuard {
 
         console.log("Chain ID:", block.chainid);
         console.log("LayerZero EID:", expectedEid);
-        console.log("Endpoint:", LZ_ENDPOINT_V2);
+        console.log("Endpoint:", _endpoint(block.chainid));
 
         vm.startBroadcast();
         // Inside a broadcast, `msg.sender` of `run()` can differ from the account that signs. Ask the cheatcode for
         // the broadcaster so the owner is always the signing account.
         (, address owner,) = vm.readCallers();
-        token = new DemoOFT(name, symbol, LZ_ENDPOINT_V2, owner, supply);
+        token = new DemoOFT(name, symbol, _endpoint(block.chainid), owner, supply);
         vm.stopBroadcast();
 
         console.log("DemoOFT deployed at:", address(token));
