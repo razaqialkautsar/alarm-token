@@ -17,8 +17,8 @@ import {TestnetGuard} from "./TestnetGuard.sol";
 contract DeployDemoOFT is Script, TestnetGuard {
     uint256 internal constant TOKEN_DECIMALS = 1e18;
     uint256 internal constant DEFAULT_INITIAL_SUPPLY_TOKENS = 1_000_000;
-    string internal constant DEFAULT_NAME = "Alarm Demo OFT";
-    string internal constant DEFAULT_SYMBOL = "ADEMO";
+    string internal constant DEFAULT_NAME = "Nothief Demo OFT";
+    string internal constant DEFAULT_SYMBOL = "NTDEMO";
 
     /// @notice Script entry point. Reads optional env overrides, checks the chain, deploys, and logs the result.
     function run() external returns (DemoOFT token) {
@@ -31,13 +31,13 @@ contract DeployDemoOFT is Script, TestnetGuard {
 
         console.log("Chain ID:", block.chainid);
         console.log("LayerZero EID:", expectedEid);
-        console.log("Endpoint:", LZ_ENDPOINT_V2);
+        console.log("Endpoint:", _endpoint(block.chainid));
 
         vm.startBroadcast();
         // Inside a broadcast, `msg.sender` of `run()` can differ from the account that signs. Ask the cheatcode for
         // the broadcaster so the owner is always the signing account.
         (, address owner,) = vm.readCallers();
-        token = new DemoOFT(name, symbol, LZ_ENDPOINT_V2, owner, supply);
+        token = new DemoOFT(name, symbol, _endpoint(block.chainid), owner, supply);
         vm.stopBroadcast();
 
         console.log("DemoOFT deployed at:", address(token));

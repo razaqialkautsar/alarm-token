@@ -19,6 +19,9 @@ contract MockEndpoint {
 
 contract DeployDemoOFTTest is Test {
     address internal constant ENDPOINT = 0x6EDCE65403992e310A62460808c4b910D972f10f;
+    address internal constant UNICHAIN_ENDPOINT = 0xb8815f3f882614048CbE201a67eF9c6F10fe5035;
+    uint256 internal constant UNICHAIN_SEPOLIA_CHAIN_ID = 1301;
+    uint32 internal constant UNICHAIN_SEPOLIA_EID = 40333;
     uint256 internal constant BASE_SEPOLIA_CHAIN_ID = 84532;
     uint256 internal constant ETHEREUM_SEPOLIA_CHAIN_ID = 11155111;
     uint256 internal constant MAINNET_CHAIN_ID = 1;
@@ -57,6 +60,26 @@ contract DeployDemoOFTTest is Test {
         DemoOFT token = deployer.run();
 
         assertEq(token.totalSupply(), DEFAULT_SUPPLY);
+    }
+
+    function test_run_deploysOnUnichainSepoliaWithItsOwnEndpoint() public {
+        vm.chainId(UNICHAIN_SEPOLIA_CHAIN_ID);
+        vm.etch(UNICHAIN_ENDPOINT, address(new MockEndpoint(UNICHAIN_SEPOLIA_EID)).code);
+        vm.store(UNICHAIN_ENDPOINT, bytes32(uint256(0)), bytes32(uint256(UNICHAIN_SEPOLIA_EID)));
+
+        DemoOFT token = deployer.run();
+
+        assertEq(address(token.endpoint()), UNICHAIN_ENDPOINT);
+    }
+
+    function test_run_revertsOnUnichainWhenOnlyTheBaseEndpointExists() public {
+        // The Base/Ethereum endpoint address has no code on Unichain Sepolia, so the guard must refuse to deploy.
+        vm.chainId(UNICHAIN_SEPOLIA_CHAIN_ID);
+        _etchEndpoint(UNICHAIN_SEPOLIA_EID);
+        vm.etch(UNICHAIN_ENDPOINT, "");
+
+        vm.expectRevert(abi.encodeWithSelector(TestnetGuard.EndpointMissing.selector, UNICHAIN_ENDPOINT));
+        deployer.run();
     }
 
     function test_run_revertsOnUnsupportedChain() public {

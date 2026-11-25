@@ -1,4 +1,4 @@
-# CLAUDE.md: Working rules for Alarm Token
+# CLAUDE.md: Working rules for nothief
 
 These rules apply to every person and every AI agent working on this project. If a rule here conflicts with a
 request, stop and ask.
@@ -17,7 +17,7 @@ request, stop and ask.
 
 ## 1. What this project is
 
-Alarm Token protects holders of LayerZero V2 OFT tokens. A reactive contract on Reactive Network (Lasna testnet)
+nothief protects holders of LayerZero V2 OFT tokens. A reactive contract on Reactive Network (Lasna testnet)
 watches for bridge-trust hijacks (peer change, delegate change). A callback on Base Sepolia swaps registered holders'
 tokens to USDC and sends the proceeds to their own wallets. No bot, no server, no issuer permission.
 
@@ -184,6 +184,10 @@ copy from it.
 
 - `main` is always deployable. Work on branches: `feat/...`, `fix/...`, `test/...`, `docs/...`, `gate/...`.
 - Commit messages: Conventional Commits in English (`feat(executor): add exit ladder`).
+- One commit per logical step (for example: dependencies, config, one contract, its tests, CI, docs). Do not bundle
+  unrelated changes into one commit.
+- No AI attribution anywhere in git or on GitHub: no `Co-Authored-By` lines for AI tools, and no "Generated with"
+  footers in commit messages, PR descriptions, or comments.
 - Every PR needs one review from another team member. PRs that touch fund-moving code need Razaqi's review.
 - Do not push, force-push, or merge for someone else without asking.
 

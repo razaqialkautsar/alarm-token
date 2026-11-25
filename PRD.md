@@ -1,6 +1,6 @@
-# Alarm Token: Product Requirements Document
+# nothief: Product Requirements Document
 
-**Project:** Alarm Token, cross-chain exit protection for LayerZero OFT token holders
+**Project:** nothief, cross-chain exit protection for LayerZero OFT token holders
 **Event:** Reactive Omni Buildathon (5 Nov to 5 Dec 2026)
 **Team:** Razaqi, Bayu, Aga, Raka (4 people)
 **Version:** 1.0, 23 Nov 2026
@@ -43,9 +43,9 @@ Read them only when this PRD is not enough, and treat this PRD as the current sp
 
 ## 1. Summary
 
-Alarm Token protects people who hold omnichain tokens (LayerZero V2 OFT) in their own wallets.
+nothief protects people who hold omnichain tokens (LayerZero V2 OFT) in their own wallets.
 
-When a token's bridge trust settings are hijacked, attackers can mint unbacked tokens and dump them. Alarm Token
+When a token's bridge trust settings are hijacked, attackers can mint unbacked tokens and dump them. nothief
 watches for the moment the hijack happens. A reactive contract on Reactive Network sees the change and triggers a
 callback on Base Sepolia. The callback swaps each registered holder's tokens to a stablecoin and sends the proceeds
 straight to the holder's own wallet.
@@ -165,17 +165,28 @@ Four criteria, equal weight, scored 1–5:
 
 ### 4.4 Track decision rule
 
-The track is chosen after gate G5 (latency of attack ordering B):
+**Eligibility (answered by the organizers).** ESC only covers Unichain Sepolia and Base Sepolia via Lasna. With
+Ethereum Sepolia in the loop, the entry goes to SIFI. ESC is judged on latency.
+[Fact: Reactive DevRel, Telegram, 23 Nov] (Telegram Dev Questions; screenshot held by Razaqi, not in the repo.)
 
-| G5 result | Track |
+ESC is allowed **only if both** conditions hold:
+1. Chain X is **Unichain Sepolia** (not Ethereum Sepolia).
+2. G2 passes in **both directions** on Base Sepolia ↔ Unichain Sepolia.
+
+If either fails, the track is **SIFI**. If both hold, the track is chosen after gate G5 (latency of attack
+ordering B):
+
+| G5 result (ESC-eligible only) | Track |
 |---|---|
 | Omni loop latency < ordering-B window < ~7 s | ESC |
 | Ordering-B window < Omni loop latency | SIFI |
 | Ordering-B window ≥ ~7 s | SIFI |
 
 - ~7 s is the old Reactive block time [Fact: Reactive docs], not a measured loop latency.
-- **Default while organizer questions are deferred:** if chain X is Ethereum Sepolia, submit to **SIFI**. The ESC
-  brief only names Unichain Sepolia and Base Sepolia.
+- **Default:** if chain X is Ethereum Sepolia, submit to **SIFI**. This is now confirmed by the organizers, not an
+  assumption. [Fact: Reactive DevRel, Telegram, 23 Nov]
+- Unichain Sepolia is marked DEPRECATED in LayerZero metadata (`CONTEXT.md` §2), so condition 2 is not guaranteed.
+  G2 decides.
 - [Opinion] The final track will most likely be SIFI.
 - **Known SIFI weakness:** no team member holds OFT tokens, so "a clear personal goal" is weak. The pitch leans on
   "a tool you would leave running" and "creative event-based logic" instead. We do not claim personal use.
@@ -394,7 +405,7 @@ Conditions for scenario (a):
 2. Yala must be verified. If not, the video calls (a) a plausible variant, not a real incident.
 3. In drill (a), the team chooses to bridge fake tokens to Base. There is no natural arbitrage on testnet. Say so.
 4. G5 is adapted for (a).
-5. If two-way G2 fails, re-evaluate Alarm Token against the fallback idea (Backstop) at that point.
+5. If two-way G2 fails, re-evaluate nothief against the fallback idea (Backstop) at that point.
 
 **Video order [Opinion]:** GriffinAI data → The Sandbox data → scenario (b) → scenario (a) → false alarm and
 re-entry.
@@ -586,7 +597,7 @@ alarm-token/
   real cost structure: callbacks are charged to the executor in the destination chain's native token, and the
   reactive contract needs REACT [Fact: Reactive docs]. It fits the health panel (`debt()`, `reserves()`).
 - **README only, as future direction, not a claim:** selling to token issuers as a trust signal ("protected by
-  Alarm Token") with paid coverage for their holders.
+  nothief") with paid coverage for their holders.
 - **Not used:** a fee per exit taken from proceeds. It would break executor invariant 1.
 
 ---
@@ -596,7 +607,7 @@ alarm-token/
 | Gate | Content | Status |
 |---|---|---|
 | **G1** | Basic loop: event → `react()` on Lasna → callback to a dummy on Base Sepolia. Proof: `getCallbacks(txHash)`. Also: (i) `react()` can subscribe dynamically, (ii) the `Progress` loop runs without a bot, (iii) `BaselineReporter` events are received, (iv) the frequency of `DelegateSet` on the testnet endpoints | ⬜ |
-| **G2** | OFT messages sent and executed in **both directions** (Base → X and X → Base). Try Base ↔ Unichain Sepolia first, then Base ↔ Ethereum Sepolia the same day if it stalls. **Both fail:** switch to Backstop. **One direction only:** re-evaluate Alarm Token vs Backstop | ⬜ |
+| **G2** | OFT messages sent and executed in **both directions** (Base → X and X → Base). Try Base ↔ Unichain Sepolia first, then Base ↔ Ethereum Sepolia the same day if it stalls. **Both fail:** switch to Backstop. **One direction only:** re-evaluate nothief vs Backstop | ⬜ |
 | **G3** | `PeerSet` signature (✅ from GAIN mainnet, recheck on our OFT). `OFTReceived` and DVN config reads on a real deployment. Gas of the 3-step swap ladder against the callback limit | 🟡 |
 | **G4** | Executor gas, proxy `_extraGas` and `_maxChargeGas`, batch size. Callback ≥ 100,000 gas. Payment mechanics | ⬜ |
 | **G5** | Attack orderings A and B for scenario (b), then adapted for (a). Measure with timestamps, report p50/p95/n. GriffinAI data ✅ | 🟡 |
@@ -662,7 +673,7 @@ team sync.
 | False alarms (legit peer expansion or delegate change) | User sells unnecessarily | Default 100% is a deliberate trade-off (B3). Same-value ignore. Portion setting. One-click re-entry. "Expansion?" label |
 | Price already fell more than the slippage cap | Exit fails | Ladder and failure modes. Shown on the dashboard |
 | Ordering B is faster than our loop | Not caught | Shown honestly (3c). Track rule in Section 4.4 |
-| Network not allowed by the ESC brief | Disqualification risk in ESC | Default to SIFI with Ethereum Sepolia |
+| Network not allowed by the ESC brief | Disqualification risk in ESC | ESC only with chain X = Unichain Sepolia and G2 passing both ways; otherwise SIFI (Section 4.4) [Fact: Reactive DevRel, Telegram, 23 Nov] |
 | SIFI "personal goal" fit is weak | Lower score | Lean on "tool you'd leave running" and event-logic creativity. No false claims |
 | Unverified claims in video or README | Credibility loss | Claim rule in Section 2.3. Raka reviews against this PRD |
 | Crowded protection theme | Harder to stand out | Lead with the bridge-hijack angle and the two on-chain incident timelines |
@@ -675,7 +686,7 @@ Full register: `catatan-risiko-alarm-token.md` (A fatal, B score-reducing, C tra
 
 | # | Item | Default until decided | Decided by / when |
 |---|---|---|---|
-| 1 | Questions to organizers (ESC with Ethereum Sepolia; self-seeded pool; track choice at submission; team size; judging window; deadline time zone) | Deferred. Defaults: SIFI if Ethereum Sepolia, own pool, submit 4 Dec, keep contracts funded for days after | Team, before submission |
+| 1 | Questions to organizers. **Answered:** ESC with Ethereum Sepolia: no, ESC covers only Unichain Sepolia + Base Sepolia via Lasna, so Ethereum Sepolia means SIFI [Fact: Reactive DevRel, Telegram, 23 Nov]. **Still open:** self-seeded pool; track choice at submission; team size; judging window; deadline time zone | Open parts deferred. Defaults: own pool, submit 4 Dec, keep contracts funded for days after | Team, before submission |
 | 2 | Approval policy (B5): approval = balance at registration, unlimited, or user choice | User choice, default "balance at registration" with an "X of Y protected" view | Team, before coding registration |
 | 3 | Chain X | Per G2 | G2 |
 | 4 | Uniswap v3 or v4 | Per G6 | G6 |
@@ -684,7 +695,7 @@ Full register: `catatan-risiko-alarm-token.md` (A fatal, B score-reducing, C tra
 | 7 | Maximum age of the reference price | To be set from G5/G6 data | G5 |
 | 8 | Batch size per callback | From measured gas | G3/G4 |
 | 9 | Yala verification (backs scenario (a)) | Without it, (a) is a "plausible variant" | Raka |
-| 10 | Mainnet monitoring of a real OFT for SIFI | Not planned | After G5 |
+| 10 | Mainnet monitoring of a real OFT for SIFI | **Answered: not required.** Testing on Lasna is enough without mainnet [Fact: Reactive DevRel, Telegram, 23 Nov]. Not planned; testnet only (`CLAUDE.md` §2.4) | Closed |
 | 11 | Gallery re-check before submission | — | Raka, 3 Dec |
 | 12 | Which file is the single living document: `PRD.md` or `alarm-token-final.md` | Both are kept until the team decides | Team |
 
@@ -748,7 +759,7 @@ Full register: `catatan-risiko-alarm-token.md` (A fatal, B score-reducing, C tra
 [Fact: `MessageLibManager.sol`, `UlnBase.sol`. That `ReceiveUln302` exposes `getUlnConfig` through `ReceiveUlnBase`
 is an inference from the import chain. Verify with a real call at G3.]
 
-### 20.4 Why Alarm Token over the fallback idea (Backstop)
+### 20.4 Why nothief over the fallback idea (Backstop)
 
 - Integration: cross-chain correlation is Reactive's core. Remove Reactive and the idea stops working.
 - Stronger problem evidence (two on-chain incident timelines).
