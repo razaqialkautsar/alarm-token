@@ -35,6 +35,33 @@ If you cloned without `--recurse-submodules`, run `git submodule update --init -
 
 `forge build` fails with missing `@layerzerolabs/...` or `@openzeppelin/...` imports if `npm ci` has not been run.
 
+## Deploy `DemoOFT` (testnet drill token)
+
+`contracts/script/DeployDemoOFT.s.sol` deploys one `DemoOFT` on the chain behind the RPC URL. It only accepts the
+testnet chain IDs Base Sepolia (84532), Ethereum Sepolia (11155111), and Unichain Sepolia (1301), and it checks that the
+LayerZero endpoint reports the expected EID before deploying. The deployer becomes owner and LayerZero delegate.
+
+```sh
+cd contracts
+source ../.env   # PRIVATE_KEY must be a dedicated testnet-only key
+# Dry run (no transaction is sent):
+forge script script/DeployDemoOFT.s.sol --rpc-url $ETH_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY
+# Send it, once per chain:
+forge script script/DeployDemoOFT.s.sol --rpc-url $ETH_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
+```
+
+Optional environment variables: `DEMO_OFT_NAME`, `DEMO_OFT_SYMBOL`, `DEMO_OFT_INITIAL_SUPPLY` (whole tokens, default
+1,000,000). Record the printed address in `deployments/` and the tx hash in `docs/gates.md`.
+
+Then wire the peers, once per chain, each time pointing at the token on the other chain
+(`contracts/script/WireDemoOFT.s.sol`). The signer must own the local token. It skips the call if the peer is already
+set, because `PeerSet` is emitted on every `setPeer`, even with an unchanged value.
+
+```sh
+# On Base Sepolia, pointing at the Ethereum Sepolia token (EID 40161). Swap the values for the other chain.
+LOCAL_OFT=0x... REMOTE_EID=40161 REMOTE_OFT=0x...   forge script script/WireDemoOFT.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
+```
+
 ## Dependencies
 
 All versions are pinned exactly. npm versions are locked in `contracts/package-lock.json` (`contracts/.npmrc` sets

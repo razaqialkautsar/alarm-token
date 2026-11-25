@@ -1,5 +1,5 @@
 {
-  "name": "alarm-token-contracts",
+  "name": "nothief-contracts",
   "private": true,
   "license": "MIT",
   "description": "Solidity dependencies for the nothief Foundry project. Run `npm ci` before `forge build`.",
