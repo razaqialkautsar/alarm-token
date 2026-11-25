@@ -5,7 +5,7 @@ import {OFT} from "@layerzerolabs/oft-evm/contracts/OFT.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @title DemoOFT
-/// @notice Standard LayerZero V2 OFT used for Alarm Token drills on testnet. No custom mint, peer, or delegate logic:
+/// @notice Standard LayerZero V2 OFT used for nothief drills on testnet. No custom mint, peer, or delegate logic:
 ///         peers and delegate are managed only through the inherited, owner-gated OApp functions.
 /// @dev Minimal version for dependency and compiler checks. Drill-specific needs (PRD.md section 8.4) are added later.
 contract DemoOFT is OFT {
