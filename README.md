@@ -71,6 +71,27 @@ script prints the GUID; track it on LayerZero Scan (testnet) and record the sour
 LOCAL_OFT=0x... DST_EID=40161 AMOUNT_TOKENS=100   forge script script/SendDemoOFT.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
 ```
 
+## G6 pool: DemoOFT/USDC on Uniswap v3 (Base Sepolia)
+
+Two scripts create and test the pool for gate G6. Both accept Base Sepolia only. Uniswap v3 is the working choice; v4 was
+not evaluated (`PRD.md` section 18, item 4 stays open until G6 is recorded on-chain).
+
+1. Get testnet USDC at the Circle faucet for the deployer wallet.
+2. `contracts/script/CreateDemoPool.s.sol` creates the pool and seeds full-range liquidity. The ratio of the two
+   amounts sets the starting price. Required env: `DEMO_OFT`, `DEMO_TOKENS`, `USDC_TOKENS` (whole tokens). Optional:
+   `POOL_FEE` (default 3000).
+3. `contracts/script/SwapDemoPool.s.sol` sells DemoOFT for USDC. Use its tx hash to read the pool `Swap` event and note
+   the format in `docs/gates.md`. Required env: `DEMO_OFT`, `SELL_TOKENS`.
+
+```sh
+cd contracts
+DEMO_OFT=0x... DEMO_TOKENS=100000 USDC_TOKENS=10   forge script script/CreateDemoPool.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
+DEMO_OFT=0x... SELL_TOKENS=1000   forge script script/SwapDemoPool.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
+```
+
+`test/fork/DemoPool.fork.t.sol` rehearses both scripts on a Base Sepolia fork. It runs only when `BASE_SEPOLIA_RPC_URL`
+is set, so CI skips it. A fork run is a rehearsal, not evidence: gate results need real tx hashes.
+
 ## Dependencies
 
 All versions are pinned exactly. npm versions are locked in `contracts/package-lock.json` (`contracts/.npmrc` sets
