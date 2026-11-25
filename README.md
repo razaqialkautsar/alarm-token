@@ -62,6 +62,15 @@ set, because `PeerSet` is emitted on every `setPeer`, even with an unchanged val
 LOCAL_OFT=0x... REMOTE_EID=40161 REMOTE_OFT=0x...   forge script script/WireDemoOFT.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
 ```
 
+Then send tokens across (`contracts/script/SendDemoOFT.s.sol`), one direction per run. Run it again on the other chain
+for the opposite direction (gate G2). The signer pays the LayerZero fee in native token and must hold the tokens. The
+script prints the GUID; track it on LayerZero Scan (testnet) and record the source and destination tx hashes in
+`docs/gates.md`. Optional: `TO` (recipient, default the signer), `LZ_RECEIVE_GAS` (default 200000).
+
+```sh
+LOCAL_OFT=0x... DST_EID=40161 AMOUNT_TOKENS=100   forge script script/SendDemoOFT.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
+```
+
 ## G6 pool: DemoOFT/USDC on Uniswap v3 (Base Sepolia)
 
 Two scripts create and test the pool for gate G6. Both accept Base Sepolia only. Uniswap v3 is the working choice; v4 was
