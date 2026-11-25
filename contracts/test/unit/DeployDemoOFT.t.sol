@@ -3,6 +3,7 @@ pragma solidity 0.8.30;
 
 import {Test} from "forge-std/Test.sol";
 import {DeployDemoOFT} from "../../script/DeployDemoOFT.s.sol";
+import {TestnetGuard} from "../../script/TestnetGuard.sol";
 import {DemoOFT} from "../../src/demo/DemoOFT.sol";
 
 /// @dev Stands in for EndpointV2 at the real address: answers `eid()` and accepts `setDelegate` from the OApp constructor.
@@ -62,7 +63,7 @@ contract DeployDemoOFTTest is Test {
         vm.chainId(MAINNET_CHAIN_ID);
         _etchEndpoint(BASE_SEPOLIA_EID);
 
-        vm.expectRevert(abi.encodeWithSelector(DeployDemoOFT.UnsupportedChain.selector, MAINNET_CHAIN_ID));
+        vm.expectRevert(abi.encodeWithSelector(TestnetGuard.UnsupportedChain.selector, MAINNET_CHAIN_ID));
         deployer.run();
     }
 
@@ -70,7 +71,7 @@ contract DeployDemoOFTTest is Test {
         vm.chainId(BASE_SEPOLIA_CHAIN_ID);
         vm.etch(ENDPOINT, "");
 
-        vm.expectRevert(abi.encodeWithSelector(DeployDemoOFT.EndpointMissing.selector, ENDPOINT));
+        vm.expectRevert(abi.encodeWithSelector(TestnetGuard.EndpointMissing.selector, ENDPOINT));
         deployer.run();
     }
 
@@ -79,7 +80,7 @@ contract DeployDemoOFTTest is Test {
         _etchEndpoint(ETHEREUM_SEPOLIA_EID);
 
         vm.expectRevert(
-            abi.encodeWithSelector(DeployDemoOFT.EndpointEidMismatch.selector, BASE_SEPOLIA_EID, ETHEREUM_SEPOLIA_EID)
+            abi.encodeWithSelector(TestnetGuard.EndpointEidMismatch.selector, BASE_SEPOLIA_EID, ETHEREUM_SEPOLIA_EID)
         );
         deployer.run();
     }
