@@ -1,6 +1,6 @@
-# Alarm Token: Product Requirements Document
+# nothief: Product Requirements Document
 
-**Project:** Alarm Token, cross-chain exit protection for LayerZero OFT token holders
+**Project:** nothief, cross-chain exit protection for LayerZero OFT token holders
 **Event:** Reactive Omni Buildathon (5 Nov to 5 Dec 2026)
 **Team:** Razaqi, Bayu, Aga, Raka (4 people)
 **Version:** 1.0, 23 Nov 2026
@@ -43,9 +43,9 @@ Read them only when this PRD is not enough, and treat this PRD as the current sp
 
 ## 1. Summary
 
-Alarm Token protects people who hold omnichain tokens (LayerZero V2 OFT) in their own wallets.
+nothief protects people who hold omnichain tokens (LayerZero V2 OFT) in their own wallets.
 
-When a token's bridge trust settings are hijacked, attackers can mint unbacked tokens and dump them. Alarm Token
+When a token's bridge trust settings are hijacked, attackers can mint unbacked tokens and dump them. nothief
 watches for the moment the hijack happens. A reactive contract on Reactive Network sees the change and triggers a
 callback on Base Sepolia. The callback swaps each registered holder's tokens to a stablecoin and sends the proceeds
 straight to the holder's own wallet.
@@ -405,7 +405,7 @@ Conditions for scenario (a):
 2. Yala must be verified. If not, the video calls (a) a plausible variant, not a real incident.
 3. In drill (a), the team chooses to bridge fake tokens to Base. There is no natural arbitrage on testnet. Say so.
 4. G5 is adapted for (a).
-5. If two-way G2 fails, re-evaluate Alarm Token against the fallback idea (Backstop) at that point.
+5. If two-way G2 fails, re-evaluate nothief against the fallback idea (Backstop) at that point.
 
 **Video order [Opinion]:** GriffinAI data → The Sandbox data → scenario (b) → scenario (a) → false alarm and
 re-entry.
@@ -597,7 +597,7 @@ alarm-token/
   real cost structure: callbacks are charged to the executor in the destination chain's native token, and the
   reactive contract needs REACT [Fact: Reactive docs]. It fits the health panel (`debt()`, `reserves()`).
 - **README only, as future direction, not a claim:** selling to token issuers as a trust signal ("protected by
-  Alarm Token") with paid coverage for their holders.
+  nothief") with paid coverage for their holders.
 - **Not used:** a fee per exit taken from proceeds. It would break executor invariant 1.
 
 ---
@@ -607,7 +607,7 @@ alarm-token/
 | Gate | Content | Status |
 |---|---|---|
 | **G1** | Basic loop: event → `react()` on Lasna → callback to a dummy on Base Sepolia. Proof: `getCallbacks(txHash)`. Also: (i) `react()` can subscribe dynamically, (ii) the `Progress` loop runs without a bot, (iii) `BaselineReporter` events are received, (iv) the frequency of `DelegateSet` on the testnet endpoints | ⬜ |
-| **G2** | OFT messages sent and executed in **both directions** (Base → X and X → Base). Try Base ↔ Unichain Sepolia first, then Base ↔ Ethereum Sepolia the same day if it stalls. **Both fail:** switch to Backstop. **One direction only:** re-evaluate Alarm Token vs Backstop | ⬜ |
+| **G2** | OFT messages sent and executed in **both directions** (Base → X and X → Base). Try Base ↔ Unichain Sepolia first, then Base ↔ Ethereum Sepolia the same day if it stalls. **Both fail:** switch to Backstop. **One direction only:** re-evaluate nothief vs Backstop | ⬜ |
 | **G3** | `PeerSet` signature (✅ from GAIN mainnet, recheck on our OFT). `OFTReceived` and DVN config reads on a real deployment. Gas of the 3-step swap ladder against the callback limit | 🟡 |
 | **G4** | Executor gas, proxy `_extraGas` and `_maxChargeGas`, batch size. Callback ≥ 100,000 gas. Payment mechanics | ⬜ |
 | **G5** | Attack orderings A and B for scenario (b), then adapted for (a). Measure with timestamps, report p50/p95/n. GriffinAI data ✅ | 🟡 |
@@ -759,7 +759,7 @@ Full register: `catatan-risiko-alarm-token.md` (A fatal, B score-reducing, C tra
 [Fact: `MessageLibManager.sol`, `UlnBase.sol`. That `ReceiveUln302` exposes `getUlnConfig` through `ReceiveUlnBase`
 is an inference from the import chain. Verify with a real call at G3.]
 
-### 20.4 Why Alarm Token over the fallback idea (Backstop)
+### 20.4 Why nothief over the fallback idea (Backstop)
 
 - Integration: cross-chain correlation is Reactive's core. Remove Reactive and the idea stops working.
 - Stronger problem evidence (two on-chain incident timelines).

@@ -1,4 +1,4 @@
-# CLAUDE.md: Working rules for Alarm Token
+# CLAUDE.md: Working rules for nothief
 
 These rules apply to every person and every AI agent working on this project. If a rule here conflicts with a
 request, stop and ask.
@@ -17,7 +17,7 @@ request, stop and ask.
 
 ## 1. What this project is
 
-Alarm Token protects holders of LayerZero V2 OFT tokens. A reactive contract on Reactive Network (Lasna testnet)
+nothief protects holders of LayerZero V2 OFT tokens. A reactive contract on Reactive Network (Lasna testnet)
 watches for bridge-trust hijacks (peer change, delegate change). A callback on Base Sepolia swaps registered holders'
 tokens to USDC and sends the proceeds to their own wallets. No bot, no server, no issuer permission.
 
