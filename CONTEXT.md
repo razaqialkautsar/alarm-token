@@ -1,6 +1,6 @@
 # CONTEXT.md: Current status and next steps
 
-Last updated: 23 Nov 2026. Update this file whenever the status changes (gates passed, contracts deployed, decisions
+Last updated: 25 Nov 2026. Update this file whenever the status changes (gates passed, contracts deployed, decisions
 changed).
 
 Read `PRD.md` and `CLAUDE.md` before this file.
@@ -17,8 +17,12 @@ Read `PRD.md` and `CLAUDE.md` before this file.
   tests. `forge build` and `forge test` pass locally (6 tests).
 - **Gates: not run.** G1, G2, G4 have not started. G3, G5, G6 are partly done from research only (see §2).
 - **Deadline:** submit on **4 Dec 2026** (event ends 5 Dec, time zone not published). About 11 days left.
-- **Track:** not chosen yet. Decided after G5 (`PRD.md` §4.4). Default is Set It and Forget It if chain X ends up
-  being Ethereum Sepolia.
+- **Track:** not chosen yet. Rule confirmed by the organizers: Every Second Counts (ESC) covers only Unichain Sepolia
+  + Base Sepolia via Lasna and is judged on latency. With Ethereum Sepolia in the loop, the entry goes to Set It and
+  Forget It (SIFI). ESC only if chain X = Unichain Sepolia **and** G2 passes in both directions; then decided after G5
+  (`PRD.md` §4.4). [Fact: Reactive DevRel, Telegram, 23 Nov]
+- **Organizer answers (23 Nov):** testing on Lasna is enough, no mainnet needed. Prizes are paid on Reactive mainnet
+  with minimal KYC. [Fact: Reactive DevRel, Telegram, 23 Nov] (Screenshot is held by Razaqi.)
 
 ## 2. Already verified during research (do not redo, but re-check on our own deployments)
 
@@ -69,7 +73,9 @@ idea (`PRD.md` §16). If it works in only one direction, re-evaluate the same da
 
 ## 5. Open decisions (do not decide alone)
 
-See `PRD.md` §18. The ones that block code soon:
+See `PRD.md` §18. Answered on 23 Nov: item 1 (ESC with Ethereum Sepolia: no) and item 10 (mainnet not required).
+The other parts of item 1 (self-seeded pool, team size, judging window, deadline time zone) are still open. The ones
+that block code soon:
 - Approval policy at registration (B5). Default: user choice, preset to "balance at registration".
 - S2 subscription expiry. Default: unsubscribe on `ExitCompleted`.
 - Which file is the single living doc (`PRD.md` or the research log). Until decided, update `PRD.md` and this file.

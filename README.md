@@ -1,4 +1,4 @@
-# Alarm Token
+# nothief
 
 Cross-chain exit protection for holders of LayerZero V2 OFT tokens, built for the Reactive Omni Buildathon.
 

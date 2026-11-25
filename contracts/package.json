@@ -2,7 +2,7 @@
   "name": "alarm-token-contracts",
   "private": true,
   "license": "MIT",
-  "description": "Solidity dependencies for the Alarm Token Foundry project. Run `npm ci` before `forge build`.",
+  "description": "Solidity dependencies for the nothief Foundry project. Run `npm ci` before `forge build`.",
   "dependencies": {
     "@layerzerolabs/lz-evm-messagelib-v2": "3.0.168",
     "@layerzerolabs/lz-evm-protocol-v2": "3.0.168",
