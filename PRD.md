@@ -165,17 +165,28 @@ Four criteria, equal weight, scored 1–5:
 
 ### 4.4 Track decision rule
 
-The track is chosen after gate G5 (latency of attack ordering B):
+**Eligibility (answered by the organizers).** ESC only covers Unichain Sepolia and Base Sepolia via Lasna. With
+Ethereum Sepolia in the loop, the entry goes to SIFI. ESC is judged on latency.
+[Fact: Reactive DevRel, Telegram, 23 Nov] (Telegram Dev Questions; screenshot held by Razaqi, not in the repo.)
 
-| G5 result | Track |
+ESC is allowed **only if both** conditions hold:
+1. Chain X is **Unichain Sepolia** (not Ethereum Sepolia).
+2. G2 passes in **both directions** on Base Sepolia ↔ Unichain Sepolia.
+
+If either fails, the track is **SIFI**. If both hold, the track is chosen after gate G5 (latency of attack
+ordering B):
+
+| G5 result (ESC-eligible only) | Track |
 |---|---|
 | Omni loop latency < ordering-B window < ~7 s | ESC |
 | Ordering-B window < Omni loop latency | SIFI |
 | Ordering-B window ≥ ~7 s | SIFI |
 
 - ~7 s is the old Reactive block time [Fact: Reactive docs], not a measured loop latency.
-- **Default while organizer questions are deferred:** if chain X is Ethereum Sepolia, submit to **SIFI**. The ESC
-  brief only names Unichain Sepolia and Base Sepolia.
+- **Default:** if chain X is Ethereum Sepolia, submit to **SIFI**. This is now confirmed by the organizers, not an
+  assumption. [Fact: Reactive DevRel, Telegram, 23 Nov]
+- Unichain Sepolia is marked DEPRECATED in LayerZero metadata (`CONTEXT.md` §2), so condition 2 is not guaranteed.
+  G2 decides.
 - [Opinion] The final track will most likely be SIFI.
 - **Known SIFI weakness:** no team member holds OFT tokens, so "a clear personal goal" is weak. The pitch leans on
   "a tool you would leave running" and "creative event-based logic" instead. We do not claim personal use.
@@ -662,7 +673,7 @@ team sync.
 | False alarms (legit peer expansion or delegate change) | User sells unnecessarily | Default 100% is a deliberate trade-off (B3). Same-value ignore. Portion setting. One-click re-entry. "Expansion?" label |
 | Price already fell more than the slippage cap | Exit fails | Ladder and failure modes. Shown on the dashboard |
 | Ordering B is faster than our loop | Not caught | Shown honestly (3c). Track rule in Section 4.4 |
-| Network not allowed by the ESC brief | Disqualification risk in ESC | Default to SIFI with Ethereum Sepolia |
+| Network not allowed by the ESC brief | Disqualification risk in ESC | ESC only with chain X = Unichain Sepolia and G2 passing both ways; otherwise SIFI (Section 4.4) [Fact: Reactive DevRel, Telegram, 23 Nov] |
 | SIFI "personal goal" fit is weak | Lower score | Lean on "tool you'd leave running" and event-logic creativity. No false claims |
 | Unverified claims in video or README | Credibility loss | Claim rule in Section 2.3. Raka reviews against this PRD |
 | Crowded protection theme | Harder to stand out | Lead with the bridge-hijack angle and the two on-chain incident timelines |
@@ -675,7 +686,7 @@ Full register: `catatan-risiko-alarm-token.md` (A fatal, B score-reducing, C tra
 
 | # | Item | Default until decided | Decided by / when |
 |---|---|---|---|
-| 1 | Questions to organizers (ESC with Ethereum Sepolia; self-seeded pool; track choice at submission; team size; judging window; deadline time zone) | Deferred. Defaults: SIFI if Ethereum Sepolia, own pool, submit 4 Dec, keep contracts funded for days after | Team, before submission |
+| 1 | Questions to organizers. **Answered:** ESC with Ethereum Sepolia: no, ESC covers only Unichain Sepolia + Base Sepolia via Lasna, so Ethereum Sepolia means SIFI [Fact: Reactive DevRel, Telegram, 23 Nov]. **Still open:** self-seeded pool; track choice at submission; team size; judging window; deadline time zone | Open parts deferred. Defaults: own pool, submit 4 Dec, keep contracts funded for days after | Team, before submission |
 | 2 | Approval policy (B5): approval = balance at registration, unlimited, or user choice | User choice, default "balance at registration" with an "X of Y protected" view | Team, before coding registration |
 | 3 | Chain X | Per G2 | G2 |
 | 4 | Uniswap v3 or v4 | Per G6 | G6 |
@@ -684,7 +695,7 @@ Full register: `catatan-risiko-alarm-token.md` (A fatal, B score-reducing, C tra
 | 7 | Maximum age of the reference price | To be set from G5/G6 data | G5 |
 | 8 | Batch size per callback | From measured gas | G3/G4 |
 | 9 | Yala verification (backs scenario (a)) | Without it, (a) is a "plausible variant" | Raka |
-| 10 | Mainnet monitoring of a real OFT for SIFI | Not planned | After G5 |
+| 10 | Mainnet monitoring of a real OFT for SIFI | **Answered: not required.** Testing on Lasna is enough without mainnet [Fact: Reactive DevRel, Telegram, 23 Nov]. Not planned; testnet only (`CLAUDE.md` §2.4) | Closed |
 | 11 | Gallery re-check before submission | — | Raka, 3 Dec |
 | 12 | Which file is the single living document: `PRD.md` or `alarm-token-final.md` | Both are kept until the team decides | Team |
 
