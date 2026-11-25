@@ -187,6 +187,10 @@ ordering B):
   assumption. [Fact: Reactive DevRel, Telegram, 23 Nov]
 - Unichain Sepolia is marked DEPRECATED in LayerZero metadata (`CONTEXT.md` §2), so condition 2 is not guaranteed.
   G2 decides.
+- **Team decision (25 Nov): SIFI is the main project.** G1, G2, and G5 are done on the SIFI version first. ESC is a
+  later decision, not a current plan. It requires that the G5 latency numbers support the "why Omni" argument and that
+  Reactive DevRel answers the team's follow-up questions. If it goes ahead, ESC is built as configuration in this repo
+  (chain X, track settings), not as new code. [Team decision, Razaqi, 25 Nov]
 - [Opinion] The final track will most likely be SIFI.
 - **Known SIFI weakness:** no team member holds OFT tokens, so "a clear personal goal" is weak. The pitch leans on
   "a tool you would leave running" and "creative event-based logic" instead. We do not claim personal use.
@@ -607,7 +611,7 @@ alarm-token/
 | Gate | Content | Status |
 |---|---|---|
 | **G1** | Basic loop: event → `react()` on Lasna → callback to a dummy on Base Sepolia. Proof: `getCallbacks(txHash)`. Also: (i) `react()` can subscribe dynamically, (ii) the `Progress` loop runs without a bot, (iii) `BaselineReporter` events are received, (iv) the frequency of `DelegateSet` on the testnet endpoints | ⬜ |
-| **G2** | OFT messages sent and executed in **both directions** (Base → X and X → Base). Try Base ↔ Unichain Sepolia first, then Base ↔ Ethereum Sepolia the same day if it stalls. **Both fail:** switch to Backstop. **One direction only:** re-evaluate Alarm Token vs Backstop | ⬜ |
+| **G2** | OFT messages sent and executed in **both directions** (Base → X and X → Base). Test Base ↔ **Ethereum Sepolia** directly (team decision, 25 Nov: SIFI first, so Unichain Sepolia is skipped for now). **Both fail:** switch to Backstop. **One direction only:** re-evaluate Alarm Token vs Backstop | ⬜ |
 | **G3** | `PeerSet` signature (✅ from GAIN mainnet, recheck on our OFT). `OFTReceived` and DVN config reads on a real deployment. Gas of the 3-step swap ladder against the callback limit | 🟡 |
 | **G4** | Executor gas, proxy `_extraGas` and `_maxChargeGas`, batch size. Callback ≥ 100,000 gas. Payment mechanics | ⬜ |
 | **G5** | Attack orderings A and B for scenario (b), then adapted for (a). Measure with timestamps, report p50/p95/n. GriffinAI data ✅ | 🟡 |
@@ -688,7 +692,7 @@ Full register: `catatan-risiko-alarm-token.md` (A fatal, B score-reducing, C tra
 |---|---|---|---|
 | 1 | Questions to organizers. **Answered:** ESC with Ethereum Sepolia: no, ESC covers only Unichain Sepolia + Base Sepolia via Lasna, so Ethereum Sepolia means SIFI [Fact: Reactive DevRel, Telegram, 23 Nov]. **Still open:** self-seeded pool; track choice at submission; team size; judging window; deadline time zone | Open parts deferred. Defaults: own pool, submit 4 Dec, keep contracts funded for days after | Team, before submission |
 | 2 | Approval policy (B5): approval = balance at registration, unlimited, or user choice | User choice, default "balance at registration" with an "X of Y protected" view | Team, before coding registration |
-| 3 | Chain X | Per G2 | G2 |
+| 3 | Chain X | Ethereum Sepolia (team decision, 25 Nov). Unichain Sepolia only if ESC is reopened; keep chain X a config value | G2 |
 | 4 | Uniswap v3 or v4 | Per G6 | G6 |
 | 5 | S2 "large amount" threshold (the reactive contract cannot read `totalSupply` [Inference]) | Any `OFTReceived` from the changed EID after S1 counts | G3 |
 | 6 | S2 subscription expiry mechanism | Unsubscribe on `ExitCompleted` | G1/G3 |
