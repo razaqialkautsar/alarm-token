@@ -26,7 +26,10 @@ contract SwapDemoPool is Script {
 
     uint256 internal constant DEMO_DECIMALS = 1e18;
     uint24 internal constant DEFAULT_POOL_FEE = 3000;
-    /// @dev 0 means no price limit. Acceptable for a testnet drill swap in a pool we control.
+    /// @dev Drill script only. `amountOutMinimum: 1` and no price limit are acceptable for a swap in a pool we control.
+    ///      `AlarmExecutor` must NOT copy this: it must derive `minOut` from the reference price and the user's
+    ///      slippage setting (PRD.md section 8.2).
+    ///      0 means no price limit.
     uint160 internal constant NO_PRICE_LIMIT = 0;
 
     error UnsupportedChain(uint256 chainId);
