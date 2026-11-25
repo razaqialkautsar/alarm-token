@@ -11,12 +11,12 @@ Read `PRD.md` and `CLAUDE.md` before this file.
 
 - **Design: final.** Research and brainstorming ran from 18 to 23 Nov. All design decisions are in `PRD.md`. The full
   reasoning (Indonesian) is in `D:\Project\HACKATHON LAGI\alarm-token-final.md`.
-- **Code: repo initialized** at `github.com/razaqialkautsar/alarm-token` with docs, license, and the folder layout
-  from `PRD.md` §12. The contracts scaffold (tasks 1 and 2) is on branch `feat/scaffold-contracts`, waiting for
-  review: Foundry project in `contracts/`, dependencies and compiler pinned, minimal CI, minimal `DemoOFT`, and smoke
-  tests. `forge build` and `forge test` pass locally (6 tests).
+- **Code:** the contracts scaffold (tasks 1 and 2) is merged in `main` (PR #2): Foundry project in `contracts/`,
+  dependencies and compiler pinned, minimal CI, minimal `DemoOFT`, and smoke tests. Open PRs: #7 (DemoOFT deploy and
+  peer wiring scripts for G2) and #8 (Uniswap v3 pool and swap scripts for G6, stacked on #7). Nothing is deployed
+  yet; real runs wait for funded wallets (task 3).
 - **Gates: not run.** G1, G2, G4 have not started. G3, G5, G6 are partly done from research only (see §2).
-- **Deadline:** submit on **4 Dec 2026** (event ends 5 Dec, time zone not published). About 11 days left.
+- **Deadline:** submit on **4 Dec 2026** (event ends 5 Dec, time zone not published). About 9 days left (25 Nov).
 - **Track:** not chosen yet. Rule confirmed by the organizers: Every Second Counts (ESC) covers only Unichain Sepolia
   + Base Sepolia via Lasna and is judged on latency. With Ethereum Sepolia in the loop, the entry goes to Set It and
   Forget It (SIFI). ESC only if chain X = Unichain Sepolia **and** G2 passes in both directions; then decided after G5
