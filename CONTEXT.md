@@ -19,6 +19,10 @@ Read `PRD.md` and `CLAUDE.md` before this file.
   + Base Sepolia via Lasna and is judged on latency. With Ethereum Sepolia in the loop, the entry goes to Set It and
   Forget It (SIFI). ESC only if chain X = Unichain Sepolia **and** G2 passes in both directions; then decided after G5
   (`PRD.md` §4.4). [Fact: Reactive DevRel, Telegram, 23 Nov]
+- **Decision (25 Nov, Razaqi): SIFI is the main project.** G1, G2, and G5 run on the SIFI version first. G2 goes
+  straight to Ethereum Sepolia; Unichain Sepolia is skipped for now. ESC is a later decision: only if G5 latency
+  supports "why Omni" and DevRel answers the follow-up questions. If it goes ahead, it is configuration in this repo,
+  not new code. So chain X must stay a config value in contracts and scripts.
 - **Organizer answers (23 Nov):** testing on Lasna is enough, no mainnet needed. Prizes are paid on Reactive mainnet
   with minimal KYC. [Fact: Reactive DevRel, Telegram, 23 Nov] (Screenshot is held by Razaqi.)
 
@@ -59,7 +63,7 @@ Addresses and full details: `PRD.md` §7.1, §7.4, §8.5, §20.
 | 2 | Resolve dependencies and the compiler pin (§3 above) | Razaqi | A minimal `AbstractReactive` and an OFT both compile |
 | 3 | Fund testnet wallets: Base Sepolia, Ethereum Sepolia, Unichain Sepolia ETH; lREACT from the faucet | Aga | Balances confirmed with `cast balance` |
 | 4 | **G1:** event → `react()` on Lasna → callback to a dummy on Base Sepolia, plus dynamic subscribe and `Progress` loop | Aga (Razaqi reviews) | `getCallbacks(txHash)` shows the callback; tx hashes in `docs/gates.md` |
-| 5 | **G2:** deploy `DemoOFT` on Base Sepolia and chain X, send in **both directions** | Razaqi deploys, Aga runs | Both directions executed; tx hashes in `docs/gates.md` |
+| 5 | **G2:** deploy `DemoOFT` on Base Sepolia and Ethereum Sepolia (chain X), send in **both directions** | Razaqi deploys, Aga runs | Both directions executed; tx hashes in `docs/gates.md` |
 | 6 | **G6:** create and seed the DemoOFT/USDC pool on Base Sepolia | Razaqi | Swap works; `Swap` event format noted |
 | 7 | Dashboard skeleton with wallet connect and network guard | Bayu | Runs locally, testnet only |
 | 8 | Branding draft, video outline, judge guide outline | Raka | Drafts in `docs/` |
