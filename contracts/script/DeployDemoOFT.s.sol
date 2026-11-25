@@ -17,8 +17,8 @@ import {TestnetGuard} from "./TestnetGuard.sol";
 contract DeployDemoOFT is Script, TestnetGuard {
     uint256 internal constant TOKEN_DECIMALS = 1e18;
     uint256 internal constant DEFAULT_INITIAL_SUPPLY_TOKENS = 1_000_000;
-    string internal constant DEFAULT_NAME = "Alarm Demo OFT";
-    string internal constant DEFAULT_SYMBOL = "ADEMO";
+    string internal constant DEFAULT_NAME = "Nothief Demo OFT";
+    string internal constant DEFAULT_SYMBOL = "NTDEMO";
 
     /// @notice Script entry point. Reads optional env overrides, checks the chain, deploys, and logs the result.
     function run() external returns (DemoOFT token) {
