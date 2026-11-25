@@ -1,6 +1,6 @@
 # app
 
-The Alarm Token dashboard (`PRD.md` §9). Owner: Bayu.
+The nothief dashboard (`PRD.md` §9). Owner: Bayu.
 
 - Next.js and TypeScript. Wallet and chain access with wagmi + viem (proposed in `PRD.md` §9).
 - Frontend only: no API routes that hold keys or sign transactions.
