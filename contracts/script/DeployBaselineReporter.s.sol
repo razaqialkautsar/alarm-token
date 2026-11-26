@@ -4,6 +4,7 @@ pragma solidity 0.8.30;
 import {Script, console} from "forge-std/Script.sol";
 import {BaselineReporter} from "../src/reporter/BaselineReporter.sol";
 import {TestnetGuard} from "./TestnetGuard.sol";
+import {DeploymentRecorder} from "./DeploymentRecorder.sol";
 
 /// @title DeployBaselineReporter
 /// @notice Deploys `BaselineReporter` on the chain behind the RPC URL, bound to that chain's LayerZero EndpointV2.
@@ -12,7 +13,7 @@ import {TestnetGuard} from "./TestnetGuard.sol";
 ///
 ///      Usage (dry run, then add --broadcast):
 ///        forge script script/DeployBaselineReporter.s.sol --rpc-url $ETH_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY
-contract DeployBaselineReporter is Script, TestnetGuard {
+contract DeployBaselineReporter is Script, TestnetGuard, DeploymentRecorder {
     /// @notice Script entry point. Checks the chain and endpoint, deploys, and logs the result.
     function run() external returns (BaselineReporter reporter) {
         uint32 expectedEid = _expectedEid(block.chainid);
@@ -28,5 +29,6 @@ contract DeployBaselineReporter is Script, TestnetGuard {
         vm.stopBroadcast();
 
         console.log("BaselineReporter deployed at:", address(reporter));
+        _record("BaselineReporter", address(reporter));
     }
 }
