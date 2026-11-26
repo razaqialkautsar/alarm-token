@@ -1,0 +1,8 @@
+{
+  "chainId": 84532,
+  "contracts": {
+    "G1Receiver": {
+      "address": "0xb5d279B63f40c3E0e24B53F058564658CFd90414"
+    }
+  }
+}
