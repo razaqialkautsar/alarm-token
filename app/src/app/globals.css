@@ -1,26 +1,212 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Brand tokens (color-60-30-10): black 60, white 30, orange 10 for CTA and alarm only. */
+@theme {
+  --color-ink: #000000;
+  --color-paper: #ffffff;
+  --color-alarm: #ea7600;
+  /* One family (Poppins) for everything; display is the same family at a heavier weight (see .font-display). */
+  --font-display: var(--font-poppins), "Poppins", Arial, sans-serif;
+  --font-sans: var(--font-poppins), "Poppins", Arial, sans-serif;
+  /* Hero tagline (Figma). Coolvetica is not bundled yet: it renders only where the font is installed or added. */
+  --font-coolvetica: "Coolvetica", var(--font-poppins), "Poppins", Arial, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--color-ink);
+  color: var(--color-paper);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  /* 100vw includes the scrollbar on desktop; never let a full-bleed element add a sideways scroll. */
+  overflow-x: clip;
+}
+
+/* Headings: Poppins bold, set a little tight. Unlayered, so it sits on top of the font-display utility. */
+.font-display {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Hero stage: the 1920 x 1080 Figma frame, scaled to cover the viewport so the composition never distorts. */
+.hero-stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100vw, calc(100svh * 1920 / 1080));
+  aspect-ratio: 1920 / 1080;
+  translate: -50% -50%;
+  container-type: inline-size;
+}
+
+/* Chain rail links: a dashed line that flows toward the next chain, and a signal dot that runs along it once per
+   cycle. Each link starts half a cycle after the one before (--rail-delay), so the signal goes event, then callback.
+   Vertical on narrow screens, horizontal from lg. */
+.rail {
+  position: relative;
+  display: block;
+  width: 2px;
+  height: 44px;
+  background: repeating-linear-gradient(180deg, currentColor 0 6px, transparent 6px 12px);
+  animation: rail-flow-y 0.8s linear infinite;
+}
+.rail-dot {
+  position: absolute;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 9999px;
+  background: currentColor;
+  box-shadow: 0 0 12px currentColor;
+  animation: rail-dot-y 2.4s ease-in-out infinite;
+  animation-delay: var(--rail-delay, 0s);
+  opacity: 0;
+}
+@media (min-width: 64rem) {
+  .rail {
+    width: 100%;
+    height: 2px;
+    background: repeating-linear-gradient(90deg, currentColor 0 6px, transparent 6px 12px);
+    animation-name: rail-flow-x;
+  }
+  .rail-dot {
+    left: auto;
+    top: 50%;
+    animation-name: rail-dot-x;
+  }
+}
+@keyframes rail-flow-x {
+  to {
+    background-position: 12px 0;
+  }
+}
+@keyframes rail-flow-y {
+  to {
+    background-position: 0 12px;
+  }
+}
+@keyframes rail-dot-x {
+  0% {
+    left: 0;
+    opacity: 0;
+  }
+  5%,
+  40% {
+    opacity: 1;
+  }
+  45% {
+    left: 100%;
+    opacity: 0;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+@keyframes rail-dot-y {
+  0% {
+    top: 0;
+    opacity: 0;
+  }
+  5%,
+  40% {
+    opacity: 1;
+  }
+  45% {
+    top: 100%;
+    opacity: 0;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail {
+    animation: none;
+  }
+  .rail-dot {
+    display: none;
+  }
+}
+
+/* Step icons (How it works): the eye blinks and looks left and right, the siren flashes on and off, the exit arrows swap. */
+@media (prefers-reduced-motion: no-preference) {
+  .step-icon-watch {
+    animation: step-watch-blink 4s ease-in-out infinite;
+  }
+  .step-icon-watch circle {
+    animation: step-watch-look 4s ease-in-out infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  /* the siren's light (its first path): white, fades, orange, fades, white; the base stays white */
+  .step-icon-detect path:first-child {
+    animation: step-siren-light 2.4s ease-in-out infinite;
+  }
+  .step-icon-exit {
+    animation: step-exit-swap 2.4s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes step-watch-blink {
+  0%,
+  42%,
+  48%,
+  100% {
+    transform: scaleY(1);
+  }
+  45% {
+    transform: scaleY(0.1);
+  }
+}
+
+@keyframes step-watch-look {
+  0%,
+  20%,
+  80%,
+  100% {
+    transform: translateX(0);
+  }
+  30%,
+  45% {
+    transform: translateX(-2.5px);
+  }
+  55%,
+  70% {
+    transform: translateX(2.5px);
+  }
+}
+
+@keyframes step-siren-light {
+  0% {
+    stroke: #ffffff;
+    opacity: 1;
+  }
+  25% {
+    opacity: 0.2;
+  }
+  50% {
+    stroke: var(--color-alarm);
+    opacity: 1;
+  }
+  75% {
+    opacity: 0.2;
+  }
+  100% {
+    stroke: #ffffff;
+    opacity: 1;
+  }
+}
+
+@keyframes step-exit-swap {
+  from {
+    transform: translateX(-2px);
+  }
+  to {
+    transform: translateX(2px);
+  }
 }
