@@ -96,6 +96,66 @@ DEMO_OFT=0x... SELL_TOKENS=1000 \
 `test/fork/DemoPool.fork.t.sol` rehearses both scripts on a Base Sepolia fork. It runs only when `BASE_SEPOLIA_RPC_URL`
 is set, so CI skips it. A fork run is a rehearsal, not evidence: gate results need real tx hashes.
 
+## G1: basic Reactive loop (Lasna ↔ Base Sepolia)
+
+Gate G1 (`PRD.md` section 14) uses two gate-only contracts in `contracts/src/gates/`. They are not part of the
+protection loop.
+
+- `G1Receiver` (Base Sepolia) emits `Ping`, `Progress`, and `Watch`, and receives the callbacks.
+- `G1Reactive` (Lasna) reacts to those events and requests the callbacks:
+  - `Ping(n)` → `onRound`. Each round emits `Progress` until `n` rounds are done, with no bot (G1 ii).
+  - `Watch(token)` → `react()` subscribes to `Baseline` for that token on chain X (G1 i). The first `Baseline`
+    is forwarded to Base through `onBaseline` (G1 iii), then the subscription is removed.
+
+Deploy order follows the Reactive rule: reactive contract, then callback contract, then the setter.
+
+```sh
+cd contracts
+source ../.env
+# 1. Lasna: G1Reactive, funded with lREACT at deployment (amount in wei)
+G1_FUND_WEI=... forge script script/DeployG1Reactive.s.sol --rpc-url $LASNA_RPC_URL --private-key $PRIVATE_KEY --broadcast
+# 2. Base Sepolia: G1Receiver, bound to the callback proxy and G1Reactive, funded with ETH for callbacks
+G1_REACTIVE=0x... G1_FUND_WEI=... \
+  forge script script/DeployG1Receiver.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
+# BaselineReporter on Ethereum Sepolia: --skip-simulation, because forge underestimates contract-creation gas there
+forge script script/DeployBaselineReporter.s.sol --rpc-url $ETH_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY   --broadcast --skip-simulation
+# 3. Lasna: configure (subscribes to the receiver's events). REPORTER = BaselineReporter on Ethereum Sepolia.
+cast send $G1_REACTIVE "configure(uint256,address,uint256,address)" 84532 $G1_RECEIVER 11155111 $REPORTER \
+  --rpc-url $LASNA_RPC_URL --private-key $PRIVATE_KEY
+```
+
+Run and check the loop:
+
+```sh
+# Basic loop + Progress continuation: 3 rounds
+cast send $G1_RECEIVER "ping(uint256)" 3 --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY
+cast call $G1_RECEIVER "roundsReceived()(uint256)" --rpc-url $BASE_SEPOLIA_RPC_URL   # expect 3
+# Callbacks requested by one reactive tx. It returned [] in G1 even after delivery, so check the receiver's events
+# and the proxy's CallbackFailure event as well
+cast call 0x8888888888888888888888888888888888888888 \
+  "getCallbacks(uint256)((uint256,address,uint256,uint256,uint256,bytes)[])" $REACTIVE_TX_HASH --rpc-url $LASNA_RPC_URL
+
+# Dynamic subscription + Baseline: watch a chain-X token, then report it on Ethereum Sepolia
+cast send $G1_RECEIVER "watch(address)" $TOKEN_X --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY
+cast send $REPORTER "report(address,uint32)" $TOKEN_X 40245 --rpc-url $ETH_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY
+cast call $G1_RECEIVER "baselines(address)(uint32,bytes32,address,bool)" $TOKEN_X --rpc-url $BASE_SEPOLIA_RPC_URL
+
+# Health: any debt stops execution silently
+cast call 0x8888888888888888888888888888888888888888 "debt(address)(uint256)" $G1_REACTIVE --rpc-url $LASNA_RPC_URL
+cast call 0x476F44b11F5C942c58f4c8E3d0300E5710743585 "debt(address)(uint256)" $G1_RECEIVER --rpc-url $BASE_SEPOLIA_RPC_URL
+```
+
+The callback gas limit is the gas limit of the whole proxy tx; the callback itself gets much less (see
+`docs/gates.md`, G1 findings). Change it with `setCallbackGasLimit(uint64)` on `G1Reactive`. After the experiment,
+`withdraw(uint256)` on either contract returns unused funds to the owner.
+
+Find the reactive tx for an origin tx on Reactscan (`https://lasna.reactscan.net`). Record every origin, reactive,
+and callback tx hash in `docs/gates.md`.
+
+G1 (iv), the `DelegateSet` rate on the testnet endpoints, is counted off-chain with `cast logs` (topic0
+`0x6ee10e9e…3981`, emitter `0x6EDCE654…f10f`) over a fixed block range on each chain. No paid subscription is needed
+for that count.
+
 ## Dependencies
 
 All versions are pinned exactly. npm versions are locked in `contracts/package-lock.json` (`contracts/.npmrc` sets

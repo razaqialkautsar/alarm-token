@@ -1,0 +1,8 @@
+{
+  "chainId": 11155111,
+  "contracts": {
+    "BaselineReporter": {
+      "address": "0xa8d533CC18c07663c385b7FBbe64D82b86D7d7AD"
+    }
+  }
+}
