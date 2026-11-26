@@ -117,6 +117,8 @@ G1_FUND_WEI=... forge script script/DeployG1Reactive.s.sol --rpc-url $LASNA_RPC_
 # 2. Base Sepolia: G1Receiver, bound to the callback proxy and G1Reactive, funded with ETH for callbacks
 G1_REACTIVE=0x... G1_FUND_WEI=... \
   forge script script/DeployG1Receiver.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
+# BaselineReporter on Ethereum Sepolia: --skip-simulation, because forge underestimates contract-creation gas there
+forge script script/DeployBaselineReporter.s.sol --rpc-url $ETH_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY   --broadcast --skip-simulation
 # 3. Lasna: configure (subscribes to the receiver's events). REPORTER = BaselineReporter on Ethereum Sepolia.
 cast send $G1_REACTIVE "configure(uint256,address,uint256,address)" 84532 $G1_RECEIVER 11155111 $REPORTER \
   --rpc-url $LASNA_RPC_URL --private-key $PRIVATE_KEY
@@ -128,7 +130,8 @@ Run and check the loop:
 # Basic loop + Progress continuation: 3 rounds
 cast send $G1_RECEIVER "ping(uint256)" 3 --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY
 cast call $G1_RECEIVER "roundsReceived()(uint256)" --rpc-url $BASE_SEPOLIA_RPC_URL   # expect 3
-# Callbacks requested by one reactive tx (an empty array means "not recorded yet", not "failed")
+# Callbacks requested by one reactive tx. It returned [] in G1 even after delivery, so check the receiver's events
+# and the proxy's CallbackFailure event as well
 cast call 0x8888888888888888888888888888888888888888 \
   "getCallbacks(uint256)((uint256,address,uint256,uint256,uint256,bytes)[])" $REACTIVE_TX_HASH --rpc-url $LASNA_RPC_URL
 
@@ -141,6 +144,10 @@ cast call $G1_RECEIVER "baselines(address)(uint32,bytes32,address,bool)" $TOKEN_
 cast call 0x8888888888888888888888888888888888888888 "debt(address)(uint256)" $G1_REACTIVE --rpc-url $LASNA_RPC_URL
 cast call 0x476F44b11F5C942c58f4c8E3d0300E5710743585 "debt(address)(uint256)" $G1_RECEIVER --rpc-url $BASE_SEPOLIA_RPC_URL
 ```
+
+The callback gas limit is the gas limit of the whole proxy tx; the callback itself gets much less (see
+`docs/gates.md`, G1 findings). Change it with `setCallbackGasLimit(uint64)` on `G1Reactive`. After the experiment,
+`withdraw(uint256)` on either contract returns unused funds to the owner.
 
 Find the reactive tx for an origin tx on Reactscan (`https://lasna.reactscan.net`). Record every origin, reactive,
 and callback tx hash in `docs/gates.md`.
