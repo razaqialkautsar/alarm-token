@@ -5,6 +5,7 @@ import {Script, console} from "forge-std/Script.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {IUniswapV3Factory, INonfungiblePositionManager} from "./UniswapV3Interfaces.sol";
+import {DeploymentRecorder} from "./DeploymentRecorder.sol";
 
 /// @title CreateDemoPool
 /// @notice Creates a Uniswap v3 DemoOFT/USDC pool on Base Sepolia and seeds it with full-range liquidity (gate G6).
@@ -16,7 +17,7 @@ import {IUniswapV3Factory, INonfungiblePositionManager} from "./UniswapV3Interfa
 ///      Usage (dry run, then add --broadcast):
 ///        DEMO_OFT=0x.. DEMO_TOKENS=100000 USDC_TOKENS=10 \
 ///        forge script script/CreateDemoPool.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY
-contract CreateDemoPool is Script {
+contract CreateDemoPool is Script, DeploymentRecorder {
     uint256 internal constant BASE_SEPOLIA_CHAIN_ID = 84532;
 
     /// @dev Uniswap v3 on Base Sepolia. Source: docs.uniswap.org v3 Base deployments page (checked 25 Nov 2026).
@@ -131,6 +132,8 @@ contract CreateDemoPool is Script {
         );
 
         console.log("Pool:", pool);
+        // Key includes the fee tier, because each tier is a separate pool.
+        _record(string.concat("UniswapV3Pool_DemoOFT_USDC_", vm.toString(uint256(plan.fee))), pool);
         console.log("Position NFT id:", tokenId);
         console.log("Liquidity:", uint256(liquidity));
         console.log("Used token0:", used0);

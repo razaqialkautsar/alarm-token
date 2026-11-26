@@ -268,18 +268,24 @@ depth.
 
 ### 7.1 Chains
 
-| Chain | Chain ID | LayerZero EID | LZ status | Reactive callback proxy |
-|---|---|---|---|---|
-| Reactive Lasna | 5318007 | — | — | `0x8888888888888888888888888888888888888888` (system contract) |
-| Base Sepolia | 84532 | 40245 | ACTIVE | `0x476F44b11F5C942c58f4c8E3d0300E5710743585` |
-| Ethereum Sepolia | 11155111 | 40161 | ACTIVE | `0xAa14d9Cd0f788Ca23d11805986C1d8bd035D23b4` |
-| Unichain Sepolia | 1301 | 40333 | **DEPRECATED** (all four DVNs deprecated, one is LZDeadDVN) | `0x775c9B990ADe401060B78D0e98684eEf8d2466C1` |
+| Chain | Chain ID | LayerZero EID | LZ status | LayerZero EndpointV2 | Reactive callback proxy |
+|---|---|---|---|---|---|
+| Reactive Lasna | 5318007 | — | — | — | `0x8888888888888888888888888888888888888888` (system contract) |
+| Base Sepolia | 84532 | 40245 | ACTIVE | `0x6EDCE65403992e310A62460808c4b910D972f10f` | `0x476F44b11F5C942c58f4c8E3d0300E5710743585` |
+| Ethereum Sepolia | 11155111 | 40161 | ACTIVE | `0x6EDCE65403992e310A62460808c4b910D972f10f` | `0xAa14d9Cd0f788Ca23d11805986C1d8bd035D23b4` |
+| Unichain Sepolia | 1301 | 40333 | **DEPRECATED** (all four DVNs deprecated, one is LZDeadDVN) | `0xb8815f3f882614048CBE201a67EF9c6F10fe5035` | `0x775c9B990ADe401060B78D0e98684eEf8d2466C1` |
 
 [Fact: Reactive docs `/origins-and-destinations`; LayerZero metadata `/v1/metadata/deployments`, checked 19–20 Nov.
 Use the `deployments` endpoint, not `/metadata/dvns`, which does not list Unichain testnet.]
 
-- **Chain X** (the second chain, K1): Base Sepolia + Unichain Sepolia if G2 passes. Otherwise Base Sepolia +
-  Ethereum Sepolia. [Opinion] Ethereum Sepolia is the likely outcome.
+The two address columns are different contracts. **EndpointV2** is LayerZero's endpoint (token peers, `delegates`,
+`DelegateSet`). The **callback proxy** is Reactive's contract that delivers callbacks to `AlarmExecutor`. Do not swap
+them. Unichain Sepolia has its own EndpointV2; the Base/Ethereum address has no code there. [Fact: LayerZero
+`/v1/metadata/deployments`, checked 25 Nov; `eid()` read on-chain on each chain (40245, 40161, 40333 through two
+public Unichain RPCs).]
+
+- **Chain X** (the second chain, K1): **Ethereum Sepolia** (team decision, 25 Nov, Section 4.4). Unichain Sepolia
+  only if ESC is reopened.
 - Arbitrum Sepolia and Optimism Sepolia are **not** supported by Reactive testnet [Fact].
 - Block times: Base Sepolia 200 ms, Unichain Sepolia 1 s, Reactive Omni ~1 s (was ~7 s) [Fact: docs and blog].
 

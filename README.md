@@ -59,7 +59,8 @@ set, because `PeerSet` is emitted on every `setPeer`, even with an unchanged val
 
 ```sh
 # On Base Sepolia, pointing at the Ethereum Sepolia token (EID 40161). Swap the values for the other chain.
-LOCAL_OFT=0x... REMOTE_EID=40161 REMOTE_OFT=0x...   forge script script/WireDemoOFT.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
+LOCAL_OFT=0x... REMOTE_EID=40161 REMOTE_OFT=0x... \
+  forge script script/WireDemoOFT.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
 ```
 
 Then send tokens across (`contracts/script/SendDemoOFT.s.sol`), one direction per run. Run it again on the other chain
@@ -68,7 +69,8 @@ script prints the GUID; track it on LayerZero Scan (testnet) and record the sour
 `docs/gates.md`. Optional: `TO` (recipient, default the signer), `LZ_RECEIVE_GAS` (default 200000).
 
 ```sh
-LOCAL_OFT=0x... DST_EID=40161 AMOUNT_TOKENS=100   forge script script/SendDemoOFT.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
+LOCAL_OFT=0x... DST_EID=40161 AMOUNT_TOKENS=100 \
+  forge script script/SendDemoOFT.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
 ```
 
 ## G6 pool: DemoOFT/USDC on Uniswap v3 (Base Sepolia)
@@ -85,8 +87,10 @@ not evaluated (`PRD.md` section 18, item 4 stays open until G6 is recorded on-ch
 
 ```sh
 cd contracts
-DEMO_OFT=0x... DEMO_TOKENS=100000 USDC_TOKENS=10   forge script script/CreateDemoPool.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
-DEMO_OFT=0x... SELL_TOKENS=1000   forge script script/SwapDemoPool.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
+DEMO_OFT=0x... DEMO_TOKENS=100000 USDC_TOKENS=10 \
+  forge script script/CreateDemoPool.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
+DEMO_OFT=0x... SELL_TOKENS=1000 \
+  forge script script/SwapDemoPool.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
 ```
 
 `test/fork/DemoPool.fork.t.sol` rehearses both scripts on a Base Sepolia fork. It runs only when `BASE_SEPOLIA_RPC_URL`
