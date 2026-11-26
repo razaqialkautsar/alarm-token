@@ -4,6 +4,7 @@ pragma solidity 0.8.30;
 import {Script, console} from "forge-std/Script.sol";
 import {DemoOFT} from "../src/demo/DemoOFT.sol";
 import {TestnetGuard} from "./TestnetGuard.sol";
+import {DeploymentRecorder} from "./DeploymentRecorder.sol";
 
 /// @title DeployDemoOFT
 /// @notice Deploys one `DemoOFT` on the chain the script runs against. Testnet only (CLAUDE.md sections 2.4 and 7).
@@ -14,7 +15,7 @@ import {TestnetGuard} from "./TestnetGuard.sol";
 ///      Usage (dry run, then add --broadcast):
 ///        forge script script/DeployDemoOFT.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY
 ///      Optional env: DEMO_OFT_NAME, DEMO_OFT_SYMBOL, DEMO_OFT_INITIAL_SUPPLY (whole tokens, 18 decimals).
-contract DeployDemoOFT is Script, TestnetGuard {
+contract DeployDemoOFT is Script, TestnetGuard, DeploymentRecorder {
     uint256 internal constant TOKEN_DECIMALS = 1e18;
     uint256 internal constant DEFAULT_INITIAL_SUPPLY_TOKENS = 1_000_000;
     string internal constant DEFAULT_NAME = "Nothief Demo OFT";
@@ -41,6 +42,7 @@ contract DeployDemoOFT is Script, TestnetGuard {
         vm.stopBroadcast();
 
         console.log("DemoOFT deployed at:", address(token));
+        _record("DemoOFT", address(token));
         console.log("Owner and delegate:", owner);
         console.log("Initial supply (wei):", supply);
     }
