@@ -48,10 +48,12 @@ contract G1Receiver is AbstractCallback {
     event RoundReceived(uint256 roundsLeft, uint256 total);
     /// @notice An `onBaseline` callback arrived.
     event BaselineReceived(address indexed token, uint32 indexed remoteEid, bytes32 peer, address delegate);
+    event Withdrawn(address indexed to, uint256 amount);
 
     error NotOwner(address caller);
     error ZeroAddress();
     error RoundsOutOfRange(uint256 rounds);
+    error WithdrawFailed();
 
     /// @param callbackProxy_ Reactive callback proxy on this chain (Base Sepolia: PRD.md section 7.1).
     /// @param reactive_ `G1Reactive` address on Lasna. The only accepted callback sender.
@@ -104,6 +106,14 @@ contract G1Receiver is AbstractCallback {
     {
         baselines[token] = ReceivedBaseline(remoteEid, peer, delegate, true);
         emit BaselineReceived(token, remoteEid, peer, delegate);
+    }
+
+    /// @notice Returns unused ETH to the owner after the experiment. Gate-only: this contract holds no user funds.
+    /// @param amount Amount in wei.
+    function withdraw(uint256 amount) external onlyOwner {
+        (bool ok,) = payable(OWNER).call{value: amount}("");
+        if (!ok) revert WithdrawFailed();
+        emit Withdrawn(OWNER, amount);
     }
 
     /// @notice Pays any debt to the callback proxy from this contract's balance. Anyone may call it.

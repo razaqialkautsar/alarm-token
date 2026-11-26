@@ -21,9 +21,13 @@ contract G1Reactive is AbstractReactive {
     string public constant GATE_NOTICE =
         "GATE G1 ONLY: nothief testnet loop experiment. Not part of the protection loop.";
 
-    /// @notice Gas limit for every callback. Reactive drops requests below 100,000. The real executor value comes from
-    ///         gate G4; this one only has to cover `G1Receiver`'s small callbacks.
-    uint64 public constant CALLBACK_GAS_LIMIT = 200_000;
+    /// @notice Reactive drops callback requests with a gas limit below this value.
+    uint64 public constant MIN_CALLBACK_GAS_LIMIT = 100_000;
+
+    /// @notice Starting callback gas limit. The requested limit is the gas limit of the whole proxy transaction, not the
+    ///         gas the callback receives: on 26 Nov 2026 a 200,000 limit left `onRound` only 24,190 gas and it ran out
+    ///         (Base Sepolia tx 0x120b83b9...468a). 300,000 leaves room for `G1Receiver`'s small callbacks.
+    uint64 public constant DEFAULT_CALLBACK_GAS_LIMIT = 300_000;
 
     /// @notice topic0 values of the events this contract reacts to.
     uint256 public constant PING_TOPIC0 = uint256(keccak256("Ping(uint256)"));
@@ -50,6 +54,9 @@ contract G1Reactive is AbstractReactive {
     uint256 public reporterChainId;
     address public reporter;
 
+    /// @notice Gas limit sent with every callback request. Owner-adjustable for gate G4 measurements.
+    uint64 public callbackGasLimit = DEFAULT_CALLBACK_GAS_LIMIT;
+
     /// @notice Chain-X tokens with an active `Baseline` subscription (subscriptions cannot be read on-chain).
     mapping(address token => bool) public watching;
 
@@ -58,10 +65,14 @@ contract G1Reactive is AbstractReactive {
     event Unsubscribed(uint256 indexed chainId, address indexed emitter, uint256 indexed topic0, uint256 topic1);
     /// @param originTxHash Hash of the origin-chain tx whose log caused the request, for the latency tool.
     event CallbackRequested(uint256 indexed chainId, address indexed recipient, bytes4 selector, uint256 originTxHash);
+    event CallbackGasLimitSet(uint64 gasLimit);
+    event Withdrawn(address indexed to, uint256 amount);
 
     error NotOwner(address caller);
     error ZeroValue();
     error AlreadyConfigured();
+    error GasLimitTooLow(uint64 gasLimit);
+    error WithdrawFailed();
 
     /// @dev Payable so the deploy can fund the contract with lREACT (`--value` reverts otherwise).
     constructor() payable {
@@ -106,6 +117,22 @@ contract G1Reactive is AbstractReactive {
         } else if (log.chainId == reporterChainId && log.contractAddress == reporter) {
             _reactToReporter(log);
         }
+    }
+
+    /// @notice Sets the gas limit sent with later callback requests.
+    /// @param gasLimit New limit, at least `MIN_CALLBACK_GAS_LIMIT`.
+    function setCallbackGasLimit(uint64 gasLimit) external onlyOwner {
+        if (gasLimit < MIN_CALLBACK_GAS_LIMIT) revert GasLimitTooLow(gasLimit);
+        callbackGasLimit = gasLimit;
+        emit CallbackGasLimitSet(gasLimit);
+    }
+
+    /// @notice Returns unused lREACT to the owner after the experiment. Gate-only: this contract holds no user funds.
+    /// @param amount Amount in wei.
+    function withdraw(uint256 amount) external onlyOwner {
+        (bool ok,) = payable(OWNER).call{value: amount}("");
+        if (!ok) revert WithdrawFailed();
+        emit Withdrawn(OWNER, amount);
     }
 
     /// @notice Pays any debt to the system contract from this contract's balance. Anyone may call it.
@@ -167,7 +194,7 @@ contract G1Reactive is AbstractReactive {
     function _requestCallback(bytes memory payload, uint256 originTxHash) private {
         SYSTEM.requestCallbackV_1_0(
             ISystemContract.CallbackConfiguration_V_1_0({
-                chainId: receiverChainId, recipient: receiver, gasLimit: CALLBACK_GAS_LIMIT, payload: payload
+                chainId: receiverChainId, recipient: receiver, gasLimit: callbackGasLimit, payload: payload
             })
         );
         // Truncation is intended: the selector is the first four bytes of the payload.
