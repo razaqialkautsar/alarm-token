@@ -9,7 +9,8 @@ import {ILayerZeroEndpointDelegates} from "../interfaces/ILayerZeroEndpointDeleg
 ///         delegate) as an event, so that `AlarmReactive` can store them as the baseline to compare later changes against.
 /// @dev Permissionless and stateless. Both values are read on-chain: the peer from the token, the delegate from the
 ///      EndpointV2 fixed at deployment. The delegate is deliberately not read through `token.endpoint()`, because a
-///      hostile token could point that at a contract that reports whatever it likes.
+///      hostile token could point that at a contract that reports whatever it likes. `token.endpoint()` is only checked
+///      to match, to reject tokens that do not belong to this chain's endpoint.
 ///      Deployed on chain X (PRD.md sections 7.2 and 8.3).
 contract BaselineReporter {
     /// @notice LayerZero EndpointV2 of this chain. Source of every delegate value.
@@ -24,6 +25,7 @@ contract BaselineReporter {
 
     error ZeroAddress();
     error NotAContract(address account);
+    error WrongEndpoint(address token, address tokenEndpoint);
 
     /// @param endpoint_ LayerZero EndpointV2 on this chain.
     constructor(address endpoint_) {
@@ -40,6 +42,10 @@ contract BaselineReporter {
     function report(address token, uint32 remoteEid) external returns (bytes32 peer, address delegate) {
         if (token == address(0)) revert ZeroAddress();
         if (token.code.length == 0) revert NotAContract(token);
+        // Sanity filter, not a trust source: rejects addresses that are not an OApp on this chain's endpoint, such as a
+        // Base token address passed on chain X. The delegate below is still read from ENDPOINT, never from the token.
+        address tokenEndpoint = address(IOAppCore(token).endpoint());
+        if (tokenEndpoint != address(ENDPOINT)) revert WrongEndpoint(token, tokenEndpoint);
 
         peer = IOAppCore(token).peers(remoteEid);
         delegate = ENDPOINT.delegates(token);
