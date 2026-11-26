@@ -82,8 +82,10 @@ contract BaselineReporterTest is TestHelperOz5 {
     }
 
     function test_report_emitsPeerAndDelegate() public {
-        // `this` was the delegate set at deployment, because the deployer passed itself as owner.
-        address delegate = ILayerZeroEndpointDelegates(address(endpoints[EID_A])).delegates(address(tokenA));
+        // The OApp constructor sets the owner passed at deployment (this contract) as delegate. Transferring ownership
+        // later does not change it.
+        address delegate = address(this);
+        assertEq(ILayerZeroEndpointDelegates(address(endpoints[EID_A])).delegates(address(tokenA)), delegate);
 
         vm.expectEmit(true, true, false, true, address(reporter));
         emit Baseline(address(tokenA), EID_B, addressToBytes32(address(tokenB)), delegate);
@@ -128,9 +130,27 @@ contract BaselineReporterTest is TestHelperOz5 {
         reporter.report(stranger, EID_B);
     }
 
-    function test_report_ignoresTheTokensOwnEndpointClaim() public {
-        // The token points at a lying endpoint, but the delegate must still come from the reporter's real endpoint.
-        LyingToken liar = new LyingToken(address(new LyingEndpoint()));
+    function test_report_revertsWhenTheTokenClaimsAnotherEndpoint() public {
+        // A token that points at a lying endpoint is rejected instead of producing a baseline.
+        address fakeEndpoint = address(new LyingEndpoint());
+        LyingToken liar = new LyingToken(fakeEndpoint);
+
+        vm.expectRevert(abi.encodeWithSelector(BaselineReporter.WrongEndpoint.selector, address(liar), fakeEndpoint));
+        reporter.report(address(liar), EID_B);
+    }
+
+    function test_report_revertsForATokenOnAnotherChainsEndpoint() public {
+        // tokenB lives on endpoint B; this reporter is bound to endpoint A.
+        vm.expectRevert(
+            abi.encodeWithSelector(BaselineReporter.WrongEndpoint.selector, address(tokenB), address(endpoints[EID_B]))
+        );
+        reporter.report(address(tokenB), EID_A);
+    }
+
+    function test_report_readsTheDelegateFromItsOwnEndpointOnly() public {
+        // The token claims the reporter's endpoint, so it passes the filter. Its delegate must still be the one the
+        // real endpoint holds (none), not anything the token could report.
+        LyingToken liar = new LyingToken(address(endpoints[EID_A]));
 
         (bytes32 peer, address delegate) = reporter.report(address(liar), EID_B);
 
