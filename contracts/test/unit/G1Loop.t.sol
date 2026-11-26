@@ -205,6 +205,60 @@ contract G1LoopTest is Test {
         assertEq(address(funded).balance, 1 ether);
     }
 
+    // ---------------------------------------------------------------- gas limit and withdraw
+
+    function test_setCallbackGasLimit_appliesToLaterRequests() public {
+        reactive.setCallbackGasLimit(450_000);
+        _react(_log(BASE_SEPOLIA, address(receiver), 1, reactive.PING_TOPIC0(), 0, 0, abi.encode(uint256(1))));
+        assertEq(sys.request(0).gasLimit, 450_000);
+    }
+
+    function test_setCallbackGasLimit_rejectsBelowMinimum() public {
+        vm.expectRevert(abi.encodeWithSelector(G1Reactive.GasLimitTooLow.selector, uint64(99_999)));
+        reactive.setCallbackGasLimit(99_999);
+    }
+
+    function test_setCallbackGasLimit_onlyOwner() public {
+        address stranger = makeAddr("stranger");
+        vm.expectRevert(abi.encodeWithSelector(G1Reactive.NotOwner.selector, stranger));
+        vm.prank(stranger);
+        reactive.setCallbackGasLimit(300_000);
+    }
+
+    function test_withdraw_returnsFundsToOwner() public {
+        address owner = makeAddr("owner");
+        vm.deal(owner, 2 ether);
+        vm.startPrank(owner);
+        G1Reactive r = new G1Reactive{value: 1 ether}();
+        G1Receiver rc = new G1Receiver{value: 1 ether}(proxy, address(r));
+        r.withdraw(0.4 ether);
+        rc.withdraw(0.6 ether);
+        vm.stopPrank();
+        assertEq(owner.balance, 1 ether);
+        assertEq(address(r).balance, 0.6 ether);
+        assertEq(address(rc).balance, 0.4 ether);
+    }
+
+    function test_withdraw_onlyOwner() public {
+        address stranger = makeAddr("stranger");
+        vm.startPrank(stranger);
+        vm.expectRevert(abi.encodeWithSelector(G1Reactive.NotOwner.selector, stranger));
+        reactive.withdraw(0);
+        vm.expectRevert(abi.encodeWithSelector(G1Receiver.NotOwner.selector, stranger));
+        receiver.withdraw(0);
+        vm.stopPrank();
+    }
+
+    /// @dev Regression for the first G1 run: the proxy forwarded 24,190 gas and the first `onRound` ran out.
+    function test_receiver_firstOnRoundNeedsMoreThanFirstRunForwarded() public {
+        uint256 before = gasleft();
+        vm.prank(proxy);
+        receiver.onRound(address(reactive), 3);
+        uint256 used = before - gasleft();
+        emit log_named_uint("onRound gas (first call, cold storage)", used);
+        assertGt(used, 24_190);
+    }
+
     // ---------------------------------------------------------------- react: access and rounds
 
     function test_react_rejectsNonSystemCaller() public {
@@ -222,8 +276,8 @@ contract G1LoopTest is Test {
         ISystemContract.CallbackConfiguration_V_1_0 memory r = sys.request(0);
         assertEq(r.chainId, BASE_SEPOLIA);
         assertEq(r.recipient, address(receiver));
-        assertEq(r.gasLimit, reactive.CALLBACK_GAS_LIMIT());
-        assertGe(r.gasLimit, 100_000);
+        assertEq(r.gasLimit, reactive.DEFAULT_CALLBACK_GAS_LIMIT());
+        assertGe(r.gasLimit, reactive.MIN_CALLBACK_GAS_LIMIT());
         assertEq(r.payload, abi.encodeCall(G1Receiver.onRound, (address(0), uint256(3))));
     }
 
