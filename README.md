@@ -24,8 +24,8 @@ Cross-chain exit protection for holders of LayerZero V2 OFT tokens, built for th
 Prerequisites: [Foundry](https://getfoundry.sh) v1.7.1 (the version CI uses), Node.js 24 with npm, and git.
 
 ```sh
-git clone --recurse-submodules https://github.com/razaqialkautsar/alarm-token.git
-cd alarm-token/contracts
+git clone --recurse-submodules https://github.com/razaqialkautsar/nothief.git
+cd nothief/contracts
 npm ci          # REQUIRED before forge build: LayerZero and OpenZeppelin sources come from npm
 forge build
 forge test
