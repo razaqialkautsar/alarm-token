@@ -5,6 +5,12 @@ script = "script"
 out = "out"
 libs = ["lib", "node_modules"]
 
+# Deploy scripts write addresses to ../deployments (only with --broadcast). Tests write to cache/ only.
+fs_permissions = [
+    { access = "read-write", path = "../deployments" },
+    { access = "read-write", path = "./cache/test-deployments" },
+]
+
 # One pinned compiler for every contract.
 # It must satisfy LayerZero V2 (`^0.8.20`) and reactive-lib-omni (`^0.8.29`).
 solc_version = "0.8.30"
