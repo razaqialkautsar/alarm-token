@@ -2,6 +2,7 @@
 pragma solidity 0.8.30;
 
 import {Test} from "forge-std/Test.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {ExitMath} from "../../src/libraries/ExitMath.sol";
 
 /// @dev External wrappers so reverts from the internal library can be asserted.
@@ -20,6 +21,10 @@ contract ExitMathHarness {
         returns (uint256, bool)
     {
         return ExitMath.effectivePrice(r, t, f, m, n);
+    }
+
+    function priceFromSqrtPriceX96(uint256 s, bool tokenIsToken0) external pure returns (uint256) {
+        return ExitMath.priceFromSqrtPriceX96(s, tokenIsToken0);
     }
 }
 
@@ -143,5 +148,90 @@ contract ExitMathTest is Test {
     ) public view {
         (uint256 price, bool usedFloor) = h.effectivePrice(refPrice, refTs, floorPrice, maxAge, nowTs);
         assertEq(price, usedFloor ? floorPrice : refPrice);
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // priceFromSqrtPriceX96
+    // ---------------------------------------------------------------------------------------------------------------
+
+    uint256 internal constant Q96 = 2 ** 96;
+    uint256 internal constant MIN_SQRT = 4_295_128_739;
+    uint256 internal constant MAX_SQRT = 1_461_446_703_485_210_103_287_273_052_203_988_822_378_723_970_342;
+    /// @dev The G6 demo pool: 100,000 DemoOFT (18 decimals) against 10 USDC (6 decimals), i.e. 0.0001 USDC per token.
+    uint256 internal constant DEMO_AMOUNT = 100_000e18;
+    uint256 internal constant USDC_AMOUNT = 10e6;
+    /// @dev 1e-12 relative tolerance, in forge's 1e18 = 100% unit.
+    uint256 internal constant REL_TOLERANCE = 1e6;
+
+    /// @dev Same formula as `CreateDemoPool._sqrtPriceX96`: sqrt(amount1 * 2^192 / amount0).
+    function _sqrtPriceFromAmounts(uint256 amount0, uint256 amount1) internal pure returns (uint256) {
+        return Math.sqrt(Math.mulDiv(amount1, uint256(1) << 192, amount0));
+    }
+
+    function test_priceFromSqrtPriceX96_parityIsOneInBothOrders() public view {
+        assertEq(h.priceFromSqrtPriceX96(Q96, true), 1e36);
+        assertEq(h.priceFromSqrtPriceX96(Q96, false), 1e36);
+    }
+
+    function test_priceFromSqrtPriceX96_knownRatio() public view {
+        // sqrtP = 2 * 2^96, so token1 / token0 = 4.
+        assertEq(h.priceFromSqrtPriceX96(2 * Q96, true), 4e36);
+        assertEq(h.priceFromSqrtPriceX96(2 * Q96, false), 0.25e36);
+    }
+
+    function test_priceFromSqrtPriceX96_demoPoolWithTokenAsToken0() public view {
+        uint256 s = _sqrtPriceFromAmounts(DEMO_AMOUNT, USDC_AMOUNT);
+        uint256 price = h.priceFromSqrtPriceX96(s, true);
+        assertApproxEqRel(price, PRICE_0_0001, REL_TOLERANCE);
+        // Selling 1,000 tokens at 0.0001 USDC is 0.1 USDC = 100,000 units.
+        assertApproxEqAbs(h.minOut(1_000e18, price, 0), 100_000, 1);
+    }
+
+    function test_priceFromSqrtPriceX96_demoPoolWithTokenAsToken1() public view {
+        uint256 s = _sqrtPriceFromAmounts(USDC_AMOUNT, DEMO_AMOUNT);
+        uint256 price = h.priceFromSqrtPriceX96(s, false);
+        assertApproxEqRel(price, PRICE_0_0001, REL_TOLERANCE);
+        assertApproxEqAbs(h.minOut(1_000e18, price, 0), 100_000, 1);
+    }
+
+    function test_priceFromSqrtPriceX96_invalidInputIsAMissingPrice() public view {
+        uint256[5] memory bad = [0, MIN_SQRT - 1, MAX_SQRT + 1, uint256(type(uint160).max) + 1, type(uint256).max];
+        for (uint256 i; i < bad.length; ++i) {
+            assertEq(h.priceFromSqrtPriceX96(bad[i], true), 0);
+            assertEq(h.priceFromSqrtPriceX96(bad[i], false), 0);
+        }
+        // A zero reference falls back to the floor price.
+        (uint256 price, bool usedFloor) = h.effectivePrice(h.priceFromSqrtPriceX96(0, true), 1_000, 7, MAX_AGE, 1_000);
+        assertEq(price, 7);
+        assertTrue(usedFloor);
+    }
+
+    function test_priceFromSqrtPriceX96_boundsDoNotRevert() public view {
+        assertGt(h.priceFromSqrtPriceX96(MIN_SQRT, false), 0);
+        assertGt(h.priceFromSqrtPriceX96(MAX_SQRT, true), 0);
+        h.priceFromSqrtPriceX96(MIN_SQRT, true);
+        h.priceFromSqrtPriceX96(MAX_SQRT, false);
+    }
+
+    /// @dev `react()` must never revert, so no input may make the conversion revert.
+    function testFuzz_priceFromSqrtPriceX96_neverReverts(uint256 s, bool tokenIsToken0) public view {
+        uint256 price = h.priceFromSqrtPriceX96(s, tokenIsToken0);
+        if (s < MIN_SQRT || s > MAX_SQRT) assertEq(price, 0);
+    }
+
+    function testFuzz_priceFromSqrtPriceX96_isMonotonic(uint256 a, uint256 b) public view {
+        a = bound(a, MIN_SQRT, MAX_SQRT);
+        b = bound(b, a, MAX_SQRT);
+        // A higher token1/token0 ratio means token0 is worth more and token1 is worth less.
+        assertLe(h.priceFromSqrtPriceX96(a, true), h.priceFromSqrtPriceX96(b, true));
+        assertGe(h.priceFromSqrtPriceX96(a, false), h.priceFromSqrtPriceX96(b, false));
+    }
+
+    /// @dev The two orders are reciprocals: price0 * price1 = 1 (in `PRICE_SCALE` units), up to rounding.
+    function testFuzz_priceFromSqrtPriceX96_ordersAreReciprocal(uint256 s) public view {
+        s = bound(s, 2 ** 64, 2 ** 128);
+        uint256 asToken0 = h.priceFromSqrtPriceX96(s, true);
+        uint256 asToken1 = h.priceFromSqrtPriceX96(s, false);
+        assertApproxEqRel(Math.mulDiv(asToken0, asToken1, 1e36), 1e36, REL_TOLERANCE);
     }
 }
