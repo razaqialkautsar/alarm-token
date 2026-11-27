@@ -13,6 +13,7 @@ import {TestnetGuard} from "./TestnetGuard.sol";
 ///      Usage (dry run, then add --broadcast):
 ///        LOCAL_OFT=0x.. REMOTE_EID=40161 REMOTE_OFT=0x.. \
 ///        forge script script/WireDemoOFT.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY
+///      On Ethereum Sepolia, broadcast with --skip-simulation (README, "Ethereum Sepolia gas").
 contract WireDemoOFT is Script, TestnetGuard {
     error RemoteEidNotAllowed(uint32 eid);
     error SameChainPeer(uint32 eid);

@@ -24,6 +24,8 @@ import {TestnetGuard} from "./TestnetGuard.sol";
 ///      Usage (dry run, then add --broadcast):
 ///        LOCAL_OFT=0x.. DST_EID=40161 AMOUNT_TOKENS=100 \
 ///        forge script script/SendDemoOFT.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY
+///      On Ethereum Sepolia, broadcast with --skip-simulation. Toward Ethereum Sepolia, consider LZ_RECEIVE_GAS=400000
+///      (README, "Ethereum Sepolia gas").
 contract SendDemoOFT is Script, TestnetGuard {
     using OptionsBuilder for bytes;
 

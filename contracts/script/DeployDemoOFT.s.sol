@@ -14,6 +14,8 @@ import {DeploymentRecorder} from "./DeploymentRecorder.sol";
 ///
 ///      Usage (dry run, then add --broadcast):
 ///        forge script script/DeployDemoOFT.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY
+///      On Ethereum Sepolia, broadcast with --skip-simulation: forge's gas limit for the creation is far too low there
+///      (README, "Ethereum Sepolia gas").
 ///      Optional env: DEMO_OFT_NAME, DEMO_OFT_SYMBOL, DEMO_OFT_INITIAL_SUPPLY (whole tokens, 18 decimals).
 contract DeployDemoOFT is Script, TestnetGuard, DeploymentRecorder {
     uint256 internal constant TOKEN_DECIMALS = 1e18;

@@ -45,10 +45,28 @@ LayerZero endpoint reports the expected EID before deploying. The deployer becom
 cd contracts
 source ../.env   # PRIVATE_KEY must be a dedicated testnet-only key
 # Dry run (no transaction is sent):
-forge script script/DeployDemoOFT.s.sol --rpc-url $ETH_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY
-# Send it, once per chain:
-forge script script/DeployDemoOFT.s.sol --rpc-url $ETH_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
+forge script script/DeployDemoOFT.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY
+# Send it, once per chain. Ethereum Sepolia needs --skip-simulation (see "Ethereum Sepolia gas" below):
+forge script script/DeployDemoOFT.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
+forge script script/DeployDemoOFT.s.sol --rpc-url $ETH_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast \
+  --skip-simulation
 ```
+
+**Ethereum Sepolia gas.** Ethereum Sepolia charges much more gas for new state than forge's local `prague` simulation
+expects, so a broadcast with forge's own gas limit runs out of gas (two failed `BaselineReporter` deploys, `docs/gates.md`
+G1 finding 5). Node estimates on 27 Nov 2026 (`cast estimate`):
+
+| Action | Ethereum Sepolia | Base Sepolia |
+|---|---|---|
+| Create `DemoOFT` | 19,914,146 | 2,884,509 |
+| Create `BaselineReporter` | 1,783,290 | 279,507 |
+| USDC `approve` to a new spender (one new storage slot) | 139,993 | 56,216 |
+
+- Add `--skip-simulation` to every `--broadcast` on Ethereum Sepolia (deploy, wire, send) so the node estimates the gas.
+- The `DemoOFT` creation is above 16,777,216 gas. An `eth_call` with that limit runs out of gas; one with 20,000,000
+  succeeds. The broadcast with the node's estimate is not tested yet.
+- For sends toward Ethereum Sepolia, pass `LZ_RECEIVE_GAS=400000` as a precaution. The destination `lzReceive` writes
+  new storage there, and the default 200,000 is not measured on Ethereum Sepolia.
 
 Optional environment variables: `DEMO_OFT_NAME`, `DEMO_OFT_SYMBOL`, `DEMO_OFT_INITIAL_SUPPLY` (whole tokens, default
 1,000,000). Record the printed address in `deployments/` and the tx hash in `docs/gates.md`.
@@ -61,6 +79,10 @@ set, because `PeerSet` is emitted on every `setPeer`, even with an unchanged val
 # On Base Sepolia, pointing at the Ethereum Sepolia token (EID 40161). Swap the values for the other chain.
 LOCAL_OFT=0x... REMOTE_EID=40161 REMOTE_OFT=0x... \
   forge script script/WireDemoOFT.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
+# On Ethereum Sepolia, pointing at the Base Sepolia token (EID 40245):
+LOCAL_OFT=0x... REMOTE_EID=40245 REMOTE_OFT=0x... \
+  forge script script/WireDemoOFT.s.sol --rpc-url $ETH_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast \
+  --skip-simulation
 ```
 
 Then send tokens across (`contracts/script/SendDemoOFT.s.sol`), one direction per run. Run it again on the other chain
@@ -69,8 +91,13 @@ script prints the GUID; track it on LayerZero Scan (testnet) and record the sour
 `docs/gates.md`. Optional: `TO` (recipient, default the signer), `LZ_RECEIVE_GAS` (default 200000).
 
 ```sh
-LOCAL_OFT=0x... DST_EID=40161 AMOUNT_TOKENS=100 \
+# Base Sepolia -> Ethereum Sepolia
+LOCAL_OFT=0x... DST_EID=40161 AMOUNT_TOKENS=100 LZ_RECEIVE_GAS=400000 \
   forge script script/SendDemoOFT.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
+# Ethereum Sepolia -> Base Sepolia
+LOCAL_OFT=0x... DST_EID=40245 AMOUNT_TOKENS=100 \
+  forge script script/SendDemoOFT.s.sol --rpc-url $ETH_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast \
+  --skip-simulation
 ```
 
 ## G6 pool: DemoOFT/USDC on Uniswap v3 (Base Sepolia)
@@ -118,7 +145,8 @@ G1_FUND_WEI=... forge script script/DeployG1Reactive.s.sol --rpc-url $LASNA_RPC_
 G1_REACTIVE=0x... G1_FUND_WEI=... \
   forge script script/DeployG1Receiver.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast
 # BaselineReporter on Ethereum Sepolia: --skip-simulation, because forge underestimates contract-creation gas there
-forge script script/DeployBaselineReporter.s.sol --rpc-url $ETH_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY   --broadcast --skip-simulation
+forge script script/DeployBaselineReporter.s.sol --rpc-url $ETH_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY \
+  --broadcast --skip-simulation
 # 3. Lasna: configure (subscribes to the receiver's events). REPORTER = BaselineReporter on Ethereum Sepolia.
 cast send $G1_REACTIVE "configure(uint256,address,uint256,address)" 84532 $G1_RECEIVER 11155111 $REPORTER \
   --rpc-url $LASNA_RPC_URL --private-key $PRIVATE_KEY
