@@ -85,7 +85,7 @@ params (sender, recipient).
 | # | Task | Owner | Status | Done when |
 |---|---|---|---|---|
 | 3 | Fund testnet wallets: Base Sepolia and Ethereum Sepolia ETH, USDC (Circle faucet), lREACT | Aga done; Razaqi for his own deployer (`scripts/wallet.sh`) | Razaqi not done | Balances confirmed with `bash scripts/wallet.sh balance` |
-| 4 | **G1:** event → `react()` on Lasna → callback to a dummy on Base Sepolia, plus dynamic subscribe and `Progress` loop | Aga (Razaqi reviews) | Partly passed 26 Nov; (i), (iii), (iv) left | `getCallbacks(txHash)` shows the callback; tx hashes in `docs/gates.md` (criterion change proposed, see §5) |
+| 4 | **G1:** event → `react()` on Lasna → callback to a dummy on Base Sepolia, plus dynamic subscribe and `Progress` loop | Aga (Razaqi reviews) | Partly passed 26 Nov; (i), (iii), (iv) left | Receiver's callback event plus origin → reactive → callback tx hashes in `docs/gates.md` (`PRD.md` §14, changed 27 Nov) |
 | 5 | **G2:** deploy and wire `DemoOFT` on Base Sepolia and Ethereum Sepolia, send in both directions | Razaqi deploys and wires, Aga sends | Scripts ready; waits for Razaqi's wallet. Aga waits for the Ethereum Sepolia address | Both directions executed; tx hashes in `docs/gates.md` |
 | 6 | **G6:** create and seed the DemoOFT/USDC pool on Base Sepolia, swap | Razaqi | Scripts ready, waits for wallets | Swap works; `Swap` event format noted |
 | 7 | Dashboard skeleton with wallet connect and network guard | Bayu | Merged (#22). Open: meaning of `reserves()`, 1-of-N DVN rule | Runs locally, testnet only |
@@ -105,9 +105,6 @@ not required).
 - Which file is the single living doc (`PRD.md` or the research log). Until decided, update `PRD.md` and this file.
 - Questions to organizers still open: self-seeded pool, team size, judging window, deadline time zone, and the
   license of `reactive-lib-omni` (its files are `UNLICENSED`).
-- G1 proof (proposed by Aga, 26 Nov): replace "`getCallbacks(txHash)` shows the callback" with "the receiver's
-  callback event plus the origin → reactive → callback tx hashes are recorded". This also affects the latency tool
-  (M14, `PRD.md` §10), which is specified to use `getCallbacks`. Needs Razaqi's approval and a `PRD.md` §14 change.
 
 Interface between `AlarmReactive` and `AlarmExecutor`, agreed by Aga on 26 Nov (still to be written into `PRD.md`):
 - `Baseline` subscription: dynamic per registered chain-X token (topic1), unsubscribed after the first baseline, so
@@ -121,9 +118,10 @@ Interface between `AlarmReactive` and `AlarmExecutor`, agreed by Aga on 26 Nov (
 - `Baseline` decoding in `react()`: the delegate is decoded as a `uint256` word, then truncated, so dirty upper bits
   cannot make `react()` revert.
 
-Still open between Aga and Razaqi:
-- Converting the Uniswap v3 `Swap` event's `sqrtPriceX96` to `refPrice`: token0/token1 order and overflow-safe math
-  (`mulDiv`). Proposed: one pure function in `ExitMath`, used by `AlarmReactive`, fuzz-tested against both orders.
+- G1 proof and the M14 latency tool no longer rely on `getCallbacks(txHash)` (proposed by Aga, approved by Razaqi,
+  27 Nov; `PRD.md` §10 and §14).
+- Converting the Uniswap v3 `Swap` event's `sqrtPriceX96` to `refPrice`: one pure function in `ExitMath` (Razaqi
+  writes it), used by `AlarmReactive`, fuzz-tested against both token orders.
 
 `AlarmExecutor` behavior, Razaqi to decide and then write into `PRD.md` §8.2:
 - Exit ladder: is step 2 "50%" of the original amount or of what remains; is "the rest at 50%" a third step after a

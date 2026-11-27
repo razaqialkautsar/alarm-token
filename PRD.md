@@ -535,7 +535,7 @@ UX rules:
 | Foundry deploy scripts | Deploy and wire all contracts per chain. Write addresses to `deployments/<chain>.json` |
 | Gate experiments | G1, G2, G4, G6 scripts with logged tx hashes |
 | Drill runner (M12, 3a ii) | Runs scenarios (b), (a), delegate, ordering B, and false alarm end to end. Judges can run it with their own keys |
-| Latency tool (M14) | Reads block timestamps of the origin tx, reactive tx, and callback tx. Uses `getCallbacks(txHash)` on the system contract. Outputs p50, p95, n |
+| Latency tool (M14) | Reads block timestamps of the origin tx, reactive tx, and callback tx. Links them through the reactive contract's own event carrying the origin tx hash (`CallbackRequested` in `G1Reactive`) and the receiver's callback event, not `getCallbacks(txHash)`, which returned `[]` for a delivered callback [Fact: G1 run 1, `docs/gates.md`]. Outputs p50, p95, n |
 | Funding helpers | lREACT faucet, `depositTo`, `coverDebt`, debt and reserve checks |
 
 These tools never sit in the protection path. If they all stop, protection still works (V6).
@@ -616,7 +616,7 @@ alarm-token/
 
 | Gate | Content | Status |
 |---|---|---|
-| **G1** | Basic loop: event → `react()` on Lasna → callback to a dummy on Base Sepolia. Proof: `getCallbacks(txHash)`. Also: (i) `react()` can subscribe dynamically, (ii) the `Progress` loop runs without a bot, (iii) `BaselineReporter` events are received, (iv) the frequency of `DelegateSet` on the testnet endpoints | ⬜ |
+| **G1** | Basic loop: event → `react()` on Lasna → callback to a dummy on Base Sepolia. Proof: the receiver's callback event, plus the origin → reactive → callback tx hashes recorded in `docs/gates.md` (changed 27 Nov from `getCallbacks(txHash)`, which returned `[]` for a delivered callback in G1 run 1; proposed by Aga, approved by Razaqi). Also: (i) `react()` can subscribe dynamically, (ii) the `Progress` loop runs without a bot, (iii) `BaselineReporter` events are received, (iv) the frequency of `DelegateSet` on the testnet endpoints | ⬜ |
 | **G2** | OFT messages sent and executed in **both directions** (Base → X and X → Base). Test Base ↔ **Ethereum Sepolia** directly (team decision, 25 Nov: SIFI first, so Unichain Sepolia is skipped for now). **Both fail:** switch to Backstop. **One direction only:** re-evaluate nothief vs Backstop | ⬜ |
 | **G3** | `PeerSet` signature (✅ from GAIN mainnet, recheck on our OFT). `OFTReceived` and DVN config reads on a real deployment. Gas of the 3-step swap ladder against the callback limit | 🟡 |
 | **G4** | Executor gas, proxy `_extraGas` and `_maxChargeGas`, batch size. Callback ≥ 100,000 gas. Payment mechanics | ⬜ |
@@ -745,7 +745,8 @@ Full register: `catatan-risiko-alarm-token.md` (A fatal, B score-reducing, C tra
   logIndex`. No origin timestamp.
 - Check debt and reserves: `cast call <system or proxy> "debt(address)" <contract>` and `"reserves(address)"`.
 - Check callbacks: `cast call <system> "getCallbacks(uint256)(...)" <reactiveTxHash>`. An empty array means "not
-  recorded yet", not "failed".
+  recorded yet", not "failed". In G1 run 1 it stayed `[]` even after delivery, so confirm delivery with the
+  receiver's events and the proxy's `CallbackFailure` event instead [Fact: `docs/gates.md` G1 finding 4].
 - MetaMask: turn off Smart Transactions for Reactive.
 
 ### 20.2 Event topic0 reference
