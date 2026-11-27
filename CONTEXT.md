@@ -71,7 +71,7 @@ params (sender, recipient).
 | 4 | **G1:** event → `react()` on Lasna → callback to a dummy on Base Sepolia, plus dynamic subscribe and `Progress` loop | Aga (Razaqi reviews) | Not started | `getCallbacks(txHash)` shows the callback; tx hashes in `docs/gates.md` |
 | 5 | **G2:** deploy and wire `DemoOFT` on Base Sepolia and Ethereum Sepolia, send in both directions | Razaqi deploys and wires, Aga sends | Scripts ready, waits for wallets | Both directions executed; tx hashes in `docs/gates.md` |
 | 6 | **G6:** create and seed the DemoOFT/USDC pool on Base Sepolia, swap | Razaqi | Scripts ready, waits for wallets | Swap works; `Swap` event format noted |
-| 7 | Dashboard skeleton with wallet connect and network guard | Bayu | No commits yet | Runs locally, testnet only |
+| 7 | Dashboard skeleton with wallet connect and network guard | Bayu | In review (`feat/dashboard-skeleton`, 27 Nov): `/dashboard` with wallet connect, testnet guard, Health panel (`debt`/`reserves`/balance from `deployments/`), G1 loop panel from on-chain receipts, DVN read helper (no screen yet). Open: meaning of `reserves()`, 1-of-N DVN rule | Runs locally, testnet only |
 | 8 | Branding draft, video outline, judge guide outline | Raka | Project renamed to nothief; drafts not in repo yet | Drafts in `docs/` |
 | 9 | `AlarmReactive` | Aga | Not started; needs the decisions in §5 | Compiles, tested, reviewed by Razaqi |
 | 10 | `AlarmExecutor` (ladder, registration, callbacks, invariant tests) | Razaqi | Not started; needs the decisions in §5 | All five invariants in `PRD.md` §8.2 tested |
