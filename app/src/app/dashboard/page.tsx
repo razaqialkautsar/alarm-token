@@ -1,3 +1,4 @@
+import { G1LoopPanel } from "@/components/dashboard/G1LoopPanel";
 import { HealthPanel } from "@/components/dashboard/HealthPanel";
 
 export default function DashboardPage() {
@@ -21,6 +22,15 @@ export default function DashboardPage() {
         </p>
         <div className="mt-6">
           <HealthPanel />
+        </div>
+      </section>
+
+      <section aria-labelledby="g1-loop">
+        <h2 id="g1-loop" className="font-display text-2xl">
+          Gate G1 loop
+        </h2>
+        <div className="mt-4">
+          <G1LoopPanel />
         </div>
       </section>
     </div>
